@@ -154,6 +154,24 @@
     .choice-icon{display:inline-block;margin-right:7px;font-size:23px;vertical-align:middle}
     @media(max-width:500px){.tug-stage{height:158px}.tug-team{width:41px;height:41px;font-size:21px}.tug-track{left:15%;right:15%}}
     @media(prefers-reduced-motion:reduce){.tug-stage.pulling .tug-track{animation:none}}
+    /* Two facing pixel wrestlers, gripping the same rope. */
+    .tug-stage{height:225px;background:linear-gradient(#463075 0 70%,#604084 70% 73%,#372454 73%);image-rendering:pixelated}
+    .tug-stage:before{top:12px;bottom:35px}.tug-track{top:48%;left:14%;right:14%;height:13px;border-radius:2px;background:repeating-linear-gradient(90deg,#9a623d 0 7px,#eac38b 7px 14px,#b67b48 14px 21px);box-shadow:0 5px #54304b,0 9px #251532}.tug-flag{top:calc(48% - 40px);z-index:3}.tug-flag:after{border:0;width:27px;height:21px;background:#ff8bde;clip-path:polygon(0 0,100% 0,80% 50%,100% 100%,0 100%)}
+    .pixel-fighter{--skin:#ffd39e;--suit:#8ce4ef;--dark:#227a9c;position:absolute;z-index:2;top:33%;left:19%;width:72px;height:100px;filter:drop-shadow(5px 6px 0 #1c103b88);transform-origin:50% 70%;will-change:transform}
+    .pixel-fighter.right{--skin:#ffd2a8;--suit:#ffa1d8;--dark:#ae3485;left:auto;right:19%;transform:scaleX(-1)}
+    .pixel-body{position:absolute;left:15px;top:39px;width:40px;height:40px;background:var(--suit);border:5px solid var(--dark);box-shadow:inset 0 7px #ffffff55,4px 4px #211636}
+    .pixel-head{position:absolute;left:1px;top:-37px;width:33px;height:32px;background:var(--skin);border:5px solid var(--dark);box-shadow:inset 0 5px #fff5,4px 4px #211636}
+    .pixel-head:before{content:"";position:absolute;top:-10px;left:-5px;width:29px;height:7px;background:var(--suit);box-shadow:8px -5px var(--dark)}
+    .pixel-eye{position:absolute;left:23px;top:-23px;width:5px;height:6px;background:#25203a;z-index:1}
+    .pixel-arm{position:absolute;width:28px;height:9px;background:var(--skin);border:3px solid var(--dark);left:32px;top:5px;transform-origin:0 50%;box-shadow:4px 3px #251636}.pixel-arm.upper{top:6px;transform:rotate(-18deg)}.pixel-arm.lower{top:23px;transform:rotate(12deg)}
+    .pixel-leg{position:absolute;width:12px;height:27px;background:var(--dark);top:34px;left:3px;box-shadow:0 5px #201735}.pixel-leg.front{left:24px;transform:rotate(-12deg)}.pixel-leg.back{transform:rotate(17deg)}
+    .pixel-spark,.pixel-sweat{position:absolute;opacity:0;font-size:20px;color:#ffe891;top:0;left:-23px}.pixel-sweat{color:#a7efff;font-size:16px;left:57px;top:12px}
+    .fighter-name{position:absolute;bottom:32px;left:3%;width:42%;text-align:center;font-weight:900;font-size:13px;z-index:4;text-shadow:0 2px 4px #1c103b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fighter-name.right{left:auto;right:3%;color:#ffc1e5}.fighter-name.left{color:#b7f7ff}
+    .tug-stage.active .pixel-body{animation:pixel-sway .45s steps(2) infinite alternate}.tug-stage.active .pixel-leg.front{animation:pixel-step .36s steps(2) infinite alternate}.tug-stage.active .pixel-arm{animation:pixel-grip .3s steps(2) infinite alternate}.tug-stage.active .pixel-sweat{animation:pixel-drop 1.1s steps(3) infinite}.tug-stage .pixel-fighter.winner .pixel-spark{animation:pixel-shine .55s steps(2) infinite alternate}.tug-stage .pixel-fighter.winner .pixel-arm.upper{transform:rotate(-65deg)}
+    .tug-stage.impact{animation:pixel-impact .13s steps(2) 5}.tug-stage.impact .pixel-fighter{filter:drop-shadow(9px 0 var(--suit)) drop-shadow(5px 6px 0 #1c103b88)}
+    @keyframes pixel-sway{to{transform:rotate(7deg)}}@keyframes pixel-step{to{transform:rotate(25deg) translateY(-6px)}}@keyframes pixel-grip{to{transform:rotate(-28deg) translateX(-3px)}}@keyframes pixel-drop{50%{opacity:1;transform:translate(4px,10px)}100%{opacity:0;transform:translate(7px,20px)}}@keyframes pixel-shine{to{opacity:1;transform:translate(-5px,-10px)}}@keyframes pixel-impact{to{translate:3px -2px}}
+    @media(max-width:500px){.tug-stage{height:190px}.pixel-fighter{left:13%;top:30%;scale:.8}.pixel-fighter.right{right:13%;left:auto}.fighter-name{bottom:24px}}
+    @media(prefers-reduced-motion:reduce){.tug-stage,.tug-stage *{animation:none!important;transition:none!important}}
     /* The welcome language carries through every non-play state. */
     body.entry-mode .entry-grid .card{padding:34px;border-color:#e9e2f3;box-shadow:0 12px 38px #3216530b}
     body.entry-mode .entry-grid .card h2{font-size:26px;color:#17151d}
@@ -299,9 +317,9 @@
        <div class="actions">
         <button id="demo-reveal" class="btn yellow canva-button" type="button">결과 공개</button>
        </div>
-       <div id="demo-tug" class="tug-stage canva-panel" role="img" aria-label="중앙 깃발이 달린 밧줄" style="margin-top:18px">
-        <span class="tug-team mine" aria-hidden="true">A</span><span class="tug-team rival" aria-hidden="true">B</span><span id="demo-moving" class="tug-moving" aria-hidden="true"><span class="tug-track"></span><span class="tug-flag"></span></span><span id="demo-caption" class="tug-caption">밧줄 중앙에서 준비</span>
-       </div>
+      </div>
+      <div id="demo-tug" class="tug-stage canva-panel" role="img" aria-label="중앙 깃발이 달린 밧줄" style="margin-top:18px">
+       <span id="demo-moving" class="tug-moving" aria-hidden="true"><span class="tug-track"></span><span class="tug-flag"></span></span><span class="pixel-fighter left" aria-hidden="true"><span class="pixel-spark">✦</span><span class="pixel-sweat">▪</span><span class="pixel-body"><span class="pixel-head"></span><span class="pixel-eye"></span><span class="pixel-arm upper"></span><span class="pixel-arm lower"></span><span class="pixel-leg front"></span><span class="pixel-leg back"></span></span></span><span class="pixel-fighter right" aria-hidden="true"><span class="pixel-spark">✦</span><span class="pixel-sweat">▪</span><span class="pixel-body"><span class="pixel-head"></span><span class="pixel-eye"></span><span class="pixel-arm upper"></span><span class="pixel-arm lower"></span><span class="pixel-leg front"></span><span class="pixel-leg back"></span></span></span><span class="fighter-name left canva-text" id="demo-left-name">참가자 대기 중</span><span class="fighter-name right canva-text" id="demo-right-name">상대 대기 중</span><span id="demo-caption" class="tug-caption">밧줄 중앙에서 준비</span>
       </div>
       <div id="teacher-status" class="status canva-text" role="status">학생 입장을 기다리는 중입니다.</div>
       <div class="actions">
@@ -338,7 +356,7 @@
         <small>이번 라운드의 상대</small><strong id="opponent-name">—</strong><small id="round-hint">선택을 기다리는 중</small>
        </div>
        <div id="tug-stage" class="tug-stage canva-panel" role="img" aria-label="양쪽 팀과 중앙 깃발이 달린 밧줄">
-        <span class="tug-team mine" aria-hidden="true">A</span><span class="tug-team rival" aria-hidden="true">B</span> <span id="force-left" class="force-line left" aria-hidden="true">← ─</span><span id="force-right" class="force-line right" aria-hidden="true">─ →</span> <span id="tug-moving" class="tug-moving" aria-hidden="true"><span class="tug-track"></span><span class="tug-flag"></span></span> <span id="tug-caption" class="tug-caption">밧줄 중앙에서 준비</span>
+        <span id="tug-moving" class="tug-moving" aria-hidden="true"><span class="tug-track"></span><span class="tug-flag"></span></span><span class="pixel-fighter left" aria-hidden="true"><span class="pixel-spark">✦</span><span class="pixel-sweat">▪</span><span class="pixel-body"><span class="pixel-head"></span><span class="pixel-eye"></span><span class="pixel-arm upper"></span><span class="pixel-arm lower"></span><span class="pixel-leg front"></span><span class="pixel-leg back"></span></span></span><span class="pixel-fighter right" aria-hidden="true"><span class="pixel-spark">✦</span><span class="pixel-sweat">▪</span><span class="pixel-body"><span class="pixel-head"></span><span class="pixel-eye"></span><span class="pixel-arm upper"></span><span class="pixel-arm lower"></span><span class="pixel-leg front"></span><span class="pixel-leg back"></span></span></span><span class="fighter-name left canva-text" id="student-left-name">내 이름 확인 중</span><span class="fighter-name right canva-text" id="student-right-name">상대 대기 중</span><span id="tug-caption" class="tug-caption">밧줄 중앙에서 준비</span>
        </div>
        <div class="choice-grid">
         <button id="rush-button" class="choice rush canva-button" type="button" disabled><span class="choice-icon" aria-hidden="true">✊</span>당기기</button> <button id="dodge-button" class="choice dodge canva-button" type="button" disabled><span class="choice-icon" aria-hidden="true">👐</span>힘 빼기</button>
@@ -401,7 +419,9 @@
   const $=id=>document.getElementById(id);
   const tabId=crypto.randomUUID();
   const channel={};
-  const state={role:'entry',pin:'',me:'',players:[],round:0,phase:'setup',pairs:[],bye:null,choices:{},history:{},results:{},deadline:0,remaining:0,paused:false,revealAt:0,approachEnd:0};
+  const state={role:'entry',pin:'',me:'',players:[],round:0,phase:'setup',pairs:[],bye:null,choices:{},history:{},results:{},deadline:0,remaining:0,paused:false,revealAt:0,approachEnd:0,roundStartedAt:0};
+  let selectedMatch=0,stageRound=0;
+  $('matches').addEventListener('click',e=>{const item=e.target.closest('[data-match-index]');if(item){selectedMatch=Number(item.dataset.matchIndex);render()}});
   const seen={};
   const DEMO_KEY='classroom-tug-demo-session-v2:';let soloDemo=false;
   let lastHeartbeat=0,lastSync=0,joinTimer=null;
@@ -516,34 +536,43 @@
   };
   const ease=t=>t*t*(3-2*t);
   function animateTug(){
-    if(state.role==='student'&&!$('student-play').hidden){
-      const pair=state.pairs.find(p=>p.includes(state.me)),stage=$('tug-stage'),caption=$('tug-caption');
+    const now=window.liveMode?clock():Date.now(),finished=['results','final'].includes(state.phase),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const configs=state.role==='teacher'?[{stage:$('demo-tug'),moving:$('demo-moving'),caption:$('demo-caption'),left:$('demo-left-name'),right:$('demo-right-name'),pair:state.pairs[selectedMatch]||state.pairs[0]}]:state.role==='student'&&!$('student-play').hidden?[{stage:$('tug-stage'),moving:$('tug-moving'),caption:$('tug-caption'),left:$('student-left-name'),right:$('student-right-name'),pair:state.pairs.find(p=>p.includes(state.me))}]:[];
+    for(const view of configs){
+      const {stage,moving,caption,left,right,pair}=view;
       stage.hidden=!pair;
-      if(pair){
-        const other=pair.find(id=>id!==state.me),finished=['results','final'].includes(state.phase);
-        const mine=state.choices[state.me],theirs=state.choices[other],complete=!!mine&&!!theirs;
-        const now=window.liveMode?clock():Date.now();
-        const progress=finished?ease(Math.min(1,Math.max(0,(now-(state.revealAt||now))/1700))):0;
-        let distance=0;
-        if(complete){
-          if(mine==='rush'&&theirs==='dodge')distance=-72;
-          else if(mine==='dodge'&&theirs==='rush')distance=72;
-          else if(mine==='rush'&&theirs==='rush')distance=(pair[0]===state.me?-1:1)*(state.round%2?14:-14);
-        }
-        const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-        $('tug-moving').style.transform='translateX('+(reduced?distance:distance*progress)+'px)';
-        stage.classList.toggle('pulling',!reduced&&((finished&&complete&&progress<1)||(state.phase==='playing'&&!!mine&&!state.paused)));
-        stage.classList.toggle('victory',finished&&complete&&distance!==0&&progress>.85);
-        $('force-left').style.opacity=finished&&complete?(mine==='rush'?'1':'.2'):'.35';
-        $('force-right').style.opacity=finished&&complete?(theirs==='rush'?'1':'.2'):'.35';
-        caption.textContent=!finished?state.phase==='countdown'?'곧 시작 · 밧줄 중앙에서 준비':state.paused?'일시 정지':mine?'선택 제출 완료 · 결과를 기다리는 중':'당기기 또는 힘 빼기를 선택하세요':!complete?'선택 미완료 · 득점 없음':mine==='rush'&&theirs==='dodge'?'승리! 내 쪽으로 크게 당겼어요 · +50점':mine==='dodge'&&theirs==='rush'?'상대가 크게 당겼어요 · +10점':mine==='rush'?'양쪽 모두 당기기 · 양쪽 −50점':'양쪽 모두 힘 빼기 · 양쪽 +20점';
-        stage.setAttribute('aria-label',caption.textContent+' · 중앙 깃발이 달린 밧줄');
-      }
+      if(!pair){left.textContent='참가자 대기 중';right.textContent='상대 대기 중';continue}
+      const [aid,bid]=stage.id==='tug-stage'?[state.me,pair.find(id=>id!==state.me)]:pair;
+      const a=player(aid),b=player(bid),x=state.choices[aid],y=state.choices[bid],complete=!!x&&!!y;
+      left.textContent=a?.name?.trim()||'내 이름 확인 중';right.textContent=b?.name?.trim()||'상대 이름 확인 중';
+      const started=state.roundStartedAt||0,elapsed=started?Math.max(0,now-started):0,active=state.phase==='playing'&&!state.paused;
+      const revealElapsed=finished?Math.max(0,now-(state.revealAt||now)):0;
+      const progress=finished?ease(Math.min(1,revealElapsed/950)):0;
+      const direction=complete&&x==='rush'&&y==='dodge'?-1:complete&&y==='rush'&&x==='dodge'?1:0;
+      const duel=complete&&x==='rush'&&y==='rush';
+      const pulse=active&&complete&&!reduced?Math.sin(elapsed/125):0;
+      const travel=finished?direction*62*progress+(duel&&revealElapsed<1100?Math.sin(revealElapsed/65)*7*(1-progress):0):active&&complete?(direction*(8+Math.sin(elapsed/180)*5)+(duel?pulse*7:0)):0;
+      moving.style.transform='translateX('+travel.toFixed(1)+'px)';
+      const fighters=stage.querySelectorAll('.pixel-fighter');
+      fighters.forEach((fighter,i)=>{
+        const choice=i?y:x,side=i?1:-1,pulling=choice==='rush'&&(active||finished),slack=choice==='dodge'&&(active||finished);
+        const lean=pulling?side*(finished?12*progress:active?8+Math.sin(elapsed/150)*6:0):slack?-side*(finished?8*progress:active?5:0):0;
+        const shift=finished?direction*progress*15:active&&complete?direction*5:0;
+        fighter.style.transform='translateX('+(shift+(pulling?-side*3:slack?side*4:0))+'px) scaleX('+(i?-1:1)+') rotate('+lean+'deg)';
+        fighter.classList.toggle('winner',finished&&direction===side&&complete&&revealElapsed>650);
+      });
+      stage.classList.toggle('active',!reduced&&active&&complete&&(x==='rush'||y==='rush'));
+      stage.classList.toggle('pulling',!reduced&&active&&complete&&(x==='rush'||y==='rush'));
+      stage.classList.toggle('impact',!reduced&&finished&&complete&&revealElapsed<650&&(direction!==0||duel));
+      stage.classList.toggle('victory',finished&&direction!==0&&revealElapsed>650);
+      caption.textContent=state.phase==='countdown'?'곧 시작 · 중앙에서 준비':active?state.paused?'일시 정지':!complete?'선택을 기다리는 중':duel?'양쪽 모두 힘껏 당기는 중':direction?'한쪽이 밧줄을 당기는 중':'양쪽 모두 힘을 빼는 중':finished?!complete?'선택 미완료 · 득점 없음':duel?'양쪽 모두 당기기 · 양쪽 −50점':direction?'당기기 성공 · 당긴 쪽 +50점':'양쪽 모두 힘 빼기 · 양쪽 +20점':'다음 라운드를 기다리는 중';
+      stage.setAttribute('aria-label',left.textContent+' 대 '+right.textContent+' · '+caption.textContent);
     }
     requestAnimationFrame(animateTug);
   }
   requestAnimationFrame(animateTug);
   function render(){
+    if(stageRound!==state.round){stageRound=state.round;selectedMatch=0}
     document.body.classList.toggle('playing-mode',state.role!=='entry'&&state.phase==='playing');
     if(state.role==='entry')return;
     const active=state.phase==='playing',counting=state.phase==='countdown',timed=active||counting||state.phase==='results',remaining=state.paused?Math.ceil(state.remaining/1000):counting?Math.max(0,Math.ceil((soloDemo?state.deadline-Date.now():state.deadline-60000-clock())/1000)):seconds();
@@ -566,7 +595,7 @@
       $('teacher-status').textContent=state.phase==='setup'?state.players.length?'대기실 · 게임을 시작할 수 있습니다.':'참가자를 한 명 이상 추가해 주세요.':state.phase==='final'?'게임 종료 · 최종 순위를 확인하세요.':state.paused?'일시 정지 중 · 모든 학생의 선택 시간이 멈췄습니다.':active?'라운드 진행 중 · 학생들의 선택을 기다리고 있습니다.':'결과 확인 중 · 10초 후 자동으로 다음 라운드가 시작됩니다.';
       $('roster').innerHTML=state.players.length?state.players.map(p=>'<span class="chip canva-tag">'+escapeHtml(p.name)+' <span class="'+(soloDemo||Date.now()-(seen[p.id]||0)<5000?'online':'offline')+'">● '+(soloDemo?'참가':Date.now()-(seen[p.id]||0)<5000?'접속':'연결 끊김')+'</span></span>').join(''):'<span class="empty">아직 참가자가 없습니다.</span>';
       if(soloDemo)renderSolo();
-      $('matches').innerHTML=state.pairs.length?state.pairs.map(([aid,bid],i)=>{const a=player(aid),b=player(bid),count=Number(!!state.choices[aid])+Number(!!state.choices[bid]);return '<div class="match canva-card"><span>'+String(i+1).padStart(2,'0')+' · '+escapeHtml(a.name)+' vs '+escapeHtml(b.name)+'</span><span class="state '+(count<2?'waiting':'')+'">'+(active?count+'/2 선택':state.results[aid]===null?'미완료':'경기 완료')+'</span></div>'}).join('')+(state.bye?'<div class="match canva-card"><span>'+escapeHtml(player(state.bye).name)+'</span><span class="state">이번 라운드 휴식</span></div>':''):'<span class="empty">게임을 시작하면 매칭이 표시됩니다.</span>';
+      $('matches').innerHTML=state.pairs.length?state.pairs.map(([aid,bid],i)=>{const a=player(aid),b=player(bid),count=Number(!!state.choices[aid])+Number(!!state.choices[bid]);return '<button type="button" data-match-index="'+i+'" class="match canva-card canva-button" style="width:100%;color:inherit;text-align:left;border-color:'+(selectedMatch===i?'#eab0ff':'#ffffff1a')+'"><span>'+String(i+1).padStart(2,'0')+' · '+escapeHtml(a.name)+' 대 '+escapeHtml(b.name)+'</span><span class="state '+(count<2?'waiting':'')+'">'+(active?count+'/2 선택':state.results[aid]===null?'미완료':'경기 완료')+'</span></button>'}).join('')+(state.bye?'<div class="match canva-card"><span>'+escapeHtml(player(state.bye).name)+'</span><span class="state">이번 라운드 휴식</span></div>':''):'<span class="empty">게임을 시작하면 매칭이 표시됩니다.</span>';
     }else{
       const me=player(state.me),pair=state.pairs.find(p=>p.includes(state.me)),opponent=pair?player(pair.find(id=>id!==state.me)):null;
       $('student-wait').hidden=state.phase!=='setup';
@@ -614,7 +643,7 @@
  function liveView(room){
    if(!room){localStorage.removeItem('choice-live-session');stopLive();changeRole('entry');notice('방이 종료되었거나 만료되었습니다.');return}
    if(room.createdAt&&clock()-room.createdAt>86400000){notice('방이 만료되었습니다. 새 방을 만들어 주세요.');stopLive();changeRole('entry');return}
-   state.pin=room.pin;state.round=room.currentRound||0;state.phase=room.phase||'setup';state.players=Object.entries(room.players||{}).map(([id,p])=>({id,...p}));state.pairs=Object.values(room.matches?.[state.round]||{}).filter(p=>Array.isArray(p));state.bye=room.bye||null;state.choices=room.choices?.[state.round]||{};state.results=room.results?.[state.round]||{};state.history=room.history||{};state.deadline=room.deadline||0;state.remaining=room.remaining||0;state.paused=!!room.paused;state.revealAt=room.revealAt||0;state.approachEnd=room.approachEnd||0;
+   state.pin=room.pin;state.round=room.currentRound||0;state.phase=room.phase||'setup';state.players=Object.entries(room.players||{}).map(([id,p])=>({id,...p}));state.pairs=Object.values(room.matches?.[state.round]||{}).filter(p=>Array.isArray(p));state.bye=room.bye||null;state.choices=room.choices?.[state.round]||{};state.results=room.results?.[state.round]||{};state.history=room.history||{};state.deadline=room.deadline||0;state.remaining=room.remaining||0;state.paused=!!room.paused;state.revealAt=room.revealAt||0;state.approachEnd=room.approachEnd||0;state.roundStartedAt=room.roundStartedAt||room.roundStartAt||0;
    if(room.status==='ended'){stopLive();changeRole('entry');notice('발표자가 방을 종료했습니다.');return}
    if(state.role==='student'&&!room.players?.[state.me]){stopLive();changeRole('entry');notice('참가자 정보를 찾을 수 없습니다. 다시 입장해 주세요.');return}
    if(state.role==='teacher'){state.players.forEach(p=>seen[p.id]=p.lastSeen||0);$('qr-mode-note').textContent='연결된 기기에서 QR 또는 PIN으로 참가할 수 있습니다.'}
@@ -648,7 +677,7 @@
   let demoLastUpdate=0;
   function applySharedState(shared){if(!soloDemo||window.liveMode||shared?.sessionId!==demoSessionId||shared?.pin!==demoPin)return;if(shared.version<demoVersion||shared.version===demoVersion&&(shared.actionId===demoActionId||demoVersion>=0))return;
     demoVersion=shared.version;demoActionId=shared.actionId;demoLastUpdate=shared.updatedAt;demoHostId=shared.hostId;
-    Object.assign(state,{pin:shared.pin,players:shared.participants||[],round:shared.currentRound||0,phase:shared.phase||'setup',pairs:shared.pairs||[],bye:shared.bye||null,choices:shared.choices||{},history:shared.history||{},results:shared.results||{},deadline:shared.deadline||0,remaining:shared.remaining||0,paused:!!shared.paused,revealAt:shared.revealAt||0,approachEnd:shared.approachEnd||0});
+    Object.assign(state,{pin:shared.pin,players:shared.participants||[],round:shared.currentRound||0,phase:shared.phase||'setup',pairs:shared.pairs||[],bye:shared.bye||null,choices:shared.choices||{},history:shared.history||{},results:shared.results||{},deadline:shared.deadline||0,remaining:shared.remaining||0,paused:!!shared.paused,revealAt:shared.revealAt||0,approachEnd:shared.approachEnd||0,roundStartedAt:shared.roundStartedAt||0});
     state.me=demoRole==='student'?demoParticipantId:'';state.demoTestAction=shared.testAction||null;
     if(shared.status==='ended'){stopDemo();changeRole('entry');notice('발표자가 데모 방을 종료했습니다.');return}
     if(state.role!==demoRole)changeRole(demoRole);else render();
@@ -674,7 +703,7 @@
   function demoTick(){const r=readDemo();if(!r||r.hostId!==demoClientId||r.paused)return;if(r.phase==='countdown'&&Date.now()>=r.roundStartedAt)demoWrite('countdown',s=>{if(s.phase!=='countdown')return false;s.phase='playing';s.deadline=s.roundStartedAt+60000});else if(r.phase==='playing'&&(Date.now()>=r.deadline||r.pairs.length>0&&r.pairs.every(([a,b])=>r.choices[a]&&r.choices[b])))demoFinish()}
   function renderSolo(){$('demo-panel').hidden=false;$('qr-code').hidden=false;$('qr-mode-note').textContent='같은 브라우저의 다른 탭에서 PIN으로 참가할 수 있습니다.';$('connection-pill').textContent='데모 모드 · 여러 탭 연결됨';$('demo-panel').querySelector('strong').textContent='데모 모드 · PIN '+state.pin;
     $('demo-choices').innerHTML=state.players.length?state.players.map(p=>'<div class="match canva-card"><span>'+escapeHtml(p.name)+(p.id===state.bye?' · 이번 라운드 휴식':'')+'</span><span><button class="btn secondary canva-button" type="button" data-demo-id="'+escapeHtml(p.id)+'" data-choice="rush" '+(state.phase!=='playing'||p.id===state.bye||!!state.choices[p.id]?'disabled':'')+'>당기기</button> <button class="btn secondary canva-button" type="button" data-demo-id="'+escapeHtml(p.id)+'" data-choice="dodge" '+(state.phase!=='playing'||p.id===state.bye||!!state.choices[p.id]?'disabled':'')+'>힘 빼기</button> <span class="state">'+(state.choices[p.id]==='rush'?'당기기':state.choices[p.id]==='dodge'?'힘 빼기':'미선택')+'</span></span></div>').join(''):'<p class="empty">참가자가 없습니다. 학생이 PIN으로 입장하거나 이름을 추가하세요.</p>';
-    $('demo-reveal').disabled=state.phase!=='playing';const shown=['results','final'].includes(state.phase),r=readDemo(),distance=shown?Math.max(-90,Math.min(90,r?.ropePosition||0)):0;$('demo-moving').style.transform='translateX('+distance+'px)';$('demo-tug').classList.toggle('victory',shown&&distance!==0);$('demo-caption').textContent=shown?(distance<0?'왼쪽으로 당겼어요':distance>0?'오른쪽으로 당겼어요':'중앙에서 팽팽해요'):'밧줄 중앙에서 준비 · 결과 공개 후 움직입니다.';$('demo-tug').setAttribute('aria-label',$('demo-caption').textContent);
+    $('demo-reveal').disabled=state.phase!=='playing';
   }
   $('demo-button').onclick=beginDemoRoom;
   $('demo-join-shortcut').onclick=()=>{$('entry-view').scrollIntoView({behavior:'smooth'});$('pin-input').focus()};
