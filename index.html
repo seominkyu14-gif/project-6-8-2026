@@ -222,7 +222,10 @@
      </div>
      교실 줄다리기 게임
     </div>
-    <div id="connection-pill" class="pill canva-tag">Firebase 설정 필요 · 데모 모드</div>
+    <div>
+     <div id="connection-pill" class="pill canva-tag">Firebase 설정 필요 · 데모 모드</div>
+     <div id="demo-connection" class="pill canva-tag" role="status" style="margin-top:7px" hidden>현재 연결된 데모 세션 · 연결 대기</div>
+    </div>
    </header>
    <main>
     <section class="hero canva-section" aria-labelledby="hero-title">
@@ -233,7 +236,7 @@
        <span>힘을 뺄까?</span></h1>
       <p class="lead">발표자가 방을 만들고 학생은 게임 PIN으로 참가해요. 당기거나 잠시 힘을 빼며 다섯 번의 줄다리기 라운드에 도전해 보세요.</p>
       <div class="hero-actions">
-       <button id="create-button" class="btn yellow canva-button" type="button"><i data-lucide="plus"></i> 방 만들기</button><button id="demo-button" class="btn yellow canva-button" type="button">데모로 시작하기</button><button id="join-shortcut" class="btn secondary canva-button" type="button"><i data-lucide="hash"></i> 게임 PIN으로 참가</button>
+       <button id="create-button" class="btn yellow canva-button" type="button"><i data-lucide="plus"></i> 방 만들기</button><button id="demo-button" class="btn yellow canva-button" type="button">데모로 시작하기</button><button id="demo-join-shortcut" class="btn secondary canva-button" type="button">데모 참가하기</button><button id="join-shortcut" class="btn secondary canva-button" type="button"><i data-lucide="hash"></i> 게임 PIN으로 참가</button>
       </div>
      </div>
     </section>
@@ -287,6 +290,9 @@
        <label class="field-label" for="demo-name">데모 참가자 이름</label>
        <div class="actions">
         <input id="demo-name" class="field canva-input" maxlength="20" placeholder="이름 입력" style="flex:1;min-width:160px"><button id="demo-add" class="btn canva-button" type="button">참가자 추가</button>
+       </div>
+       <div class="actions">
+        <button id="demo-copy" class="btn secondary canva-button" type="button">학생용 데모 입장 코드 복사</button><button id="demo-test" class="btn secondary canva-button" type="button">동기화 테스트</button>
        </div>
        <div id="demo-message" class="status canva-text" role="status">참가자를 한 명 이상 추가해 주세요.</div>
        <div id="demo-choices" class="canva-list"></div>
@@ -394,18 +400,18 @@
   <script>
   const $=id=>document.getElementById(id);
   const tabId=crypto.randomUUID();
-  const channel=new BroadcastChannel('classroom-choice-room-demo');
+  const channel={};
   const state={role:'entry',pin:'',me:'',players:[],round:0,phase:'setup',pairs:[],bye:null,choices:{},history:{},results:{},deadline:0,remaining:0,paused:false,revealAt:0,approachEnd:0};
   const seen={};
-  const DEMO_KEY='classroom-tug-solo-demo-v1';let soloDemo=false;
+  const DEMO_KEY='classroom-tug-demo-session-v2:';let soloDemo=false;
   let lastHeartbeat=0,lastSync=0,joinTimer=null;
   const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const send=(type,data={})=>channel.postMessage({type,pin:state.pin,from:tabId,...data});
+  const send=(type,data={})=>{};
   const player=id=>state.players.find(p=>p.id===id);
   const seconds=()=>Math.max(0,Math.ceil((state.deadline-(window.liveMode?clock():Date.now()))/1000));
   function notice(text){$('entry-message').textContent=text;$('entry-message').hidden=!text}
   function snapshot(){return {players:state.players,round:state.round,phase:state.phase,pairs:state.pairs,bye:state.bye,choices:state.choices,history:state.history,results:state.results,deadline:state.deadline,remaining:state.remaining,paused:state.paused,revealAt:state.revealAt,approachEnd:state.approachEnd}}
-  function sync(){if(soloDemo){try{localStorage.setItem(DEMO_KEY,JSON.stringify(snapshot()))}catch(e){$('demo-message').textContent='이 브라우저에 저장할 수 없습니다. 저장 공간을 확인해 주세요.'}return}if(state.role==='teacher')send('sync',{snapshot:snapshot()})}
+  function sync(){if(soloDemo)return;if(state.role==='teacher')send('sync',{snapshot:snapshot()})}
   function applySnapshot(data){Object.assign(state,data);render()}
   function changeRole(role){state.role=role;document.body.classList.toggle('entry-mode',role==='entry');document.body.classList.toggle('game-mode',role!=='entry');$('entry-view').hidden=role!=='entry';$('game-layout').hidden=role==='entry';$('teacher-view').hidden=role!=='teacher';$('student-view').hidden=role!=='student';render()}
   $('join-shortcut').onclick=()=>{$('entry-view').scrollIntoView({behavior:'smooth',block:'start'});$('pin-input').focus({preventScroll:true})};
@@ -576,16 +582,15 @@
       $('rush-button').disabled=!canChoose;$('dodge-button').disabled=!canChoose;
       $('rush-button').classList.toggle('selected',state.choices[state.me]==='rush');
       $('dodge-button').classList.toggle('selected',state.choices[state.me]==='dodge');
-      $('student-message').textContent=state.phase==='setup'?'대기실에 입장했습니다. 발표자의 시작을 기다려 주세요.':state.phase==='final'?'최종 순위표와 우승자를 확인하세요.':state.phase==='results'?'이번 라운드가 끝났습니다. 순위표를 확인하세요.':state.bye===state.me?'이번 라운드는 쉬어갑니다. 다음 매칭에서 우선 고려됩니다.':state.choices[state.me]?'선택을 제출했습니다. 라운드 종료를 기다려 주세요.':state.paused?'게임이 일시 정지되었습니다.':remaining===0?'선택 시간이 끝났습니다.':'상대의 선택을 예측하고 버튼 하나를 누르세요.';
+      $('student-message').textContent=(soloDemo&&state.demoTestAction?'동기화 확인 · 관리자 테스트가 모든 창에 전달되었습니다. · ':'')+(state.phase==='setup'?'대기실에 입장했습니다. 발표자의 시작을 기다려 주세요.':state.phase==='final'?'최종 순위표와 우승자를 확인하세요.':state.phase==='results'?'이번 라운드가 끝났습니다. 순위표를 확인하세요.':state.bye===state.me?'이번 라운드는 쉬어갑니다. 다음 매칭에서 우선 고려됩니다.':state.choices[state.me]?'선택을 제출했습니다. 라운드 종료를 기다려 주세요.':state.paused?'게임이 일시 정지되었습니다.':remaining===0?'선택 시간이 끝났습니다.':'상대의 선택을 예측하고 버튼 하나를 누르세요.');
     }
   }
   setInterval(()=>{
     if(window.liveMode){if(state.role!=='entry')render();return}
     if(state.role==='student'){if(Date.now()-lastHeartbeat>1000){send('heartbeat');lastHeartbeat=Date.now()}if(Date.now()-lastSync>3000){send('sync-request');lastSync=Date.now()}}
     if(state.role==='teacher'&&!state.paused){
-      if(soloDemo&&state.phase==='countdown'&&Date.now()>=state.deadline){state.phase='playing';state.deadline=Date.now()+60000;sync()}
-      else if(state.phase==='playing'&&Date.now()>=state.deadline)finishRound();
-      else if(!soloDemo&&state.phase==='results'&&Date.now()>=state.deadline)startRound();
+      if(soloDemo){demoTick()}else if(state.phase==='playing'&&Date.now()>=state.deadline)finishRound();
+      else if(state.phase==='results'&&Date.now()>=state.deadline)startRound();
     }
     if(state.role!=='entry')render();
   },500);
@@ -604,7 +609,7 @@
  const clock=()=>Date.now()+serverOffset;
  const liveError=e=>{const code=String(e?.code||'').toLowerCase(),message=String(e?.message||'').toLowerCase();if(code.includes('permission-denied')||message.includes('permission denied'))return 'Firebase 데이터베이스 접근 권한이 없습니다. Realtime Database 보안 규칙을 확인해 주세요.';if(code.startsWith('auth/')||message.includes('authentication'))return 'Firebase 익명 인증에 실패했습니다. Authentication에서 익명 로그인을 활성화하고 설정값을 확인해 주세요.';if(code.includes('databaseurl')||message.includes('databaseurl')||!firebaseConfig.databaseURL||firebaseConfig.databaseURL.startsWith('YOUR_'))return 'Firebase databaseURL이 없습니다. 연결 가이드의 Realtime Database URL을 입력해 주세요.';if(code.includes('network')||code.includes('unavailable')||message.includes('failed to fetch')||message.includes('network'))return '네트워크 연결에 실패했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.';return 'Firebase 연결에 실패했습니다. 설정과 연결 상태를 확인해 주세요.'};
  // 한 개의 안정적인 클릭 핸들러만 사용합니다. Firebase 초기화 전에도 데모 방을 만들 수 있습니다.
- $('create-button').addEventListener('click',async e=>{e.preventDefault();if(createBusy)return;createBusy=true;const button=$('create-button'),original=button.innerHTML;button.disabled=true;button.textContent='방 만드는 중…';button.setAttribute('aria-busy','true');notice('방을 준비하는 중입니다.');try{if(state.role!=='entry')throw Error('이미 방에 입장했습니다.');if(!configured){notice('Firebase 설정이 없어 같은 브라우저 탭에서 이용할 데모 방을 만듭니다.');window.liveMode=false;createDemoRoom();$('teacher-status').textContent='Firebase 설정이 없어 데모 방으로 진행합니다. 게임 PIN: '+state.pin;return}if(!firebaseConfig.databaseURL||!/^https:\/\//.test(firebaseConfig.databaseURL))throw Object.assign(Error('databaseURL 누락'),{code:'databaseURL'});if(!liveInitPromise)throw Error('Firebase 초기화가 시작되지 않았습니다.');await liveInitPromise;if(!live)throw Error('Firebase 연결을 준비하지 못했습니다.');if(!live.uid)live.uid=await live.signIn();if(!liveConnected)throw Object.assign(Error('network unavailable'),{code:'network'});await createLive()}catch(err){const message=liveError(err);connectionLabel('연결 안 됨');notice(message+' 같은 브라우저 탭에서 이용할 데모 방을 만들었습니다.');window.liveMode=false;createDemoRoom();$('teacher-status').textContent=message+' 데모 방으로 진행합니다. 게임 PIN: '+state.pin}finally{button.disabled=false;button.innerHTML=original;button.removeAttribute('aria-busy');createBusy=false}});
+ $('create-button').addEventListener('click',async e=>{e.preventDefault();if(createBusy)return;createBusy=true;const button=$('create-button'),original=button.innerHTML;button.disabled=true;button.textContent='방 만드는 중…';button.setAttribute('aria-busy','true');notice('방을 준비하는 중입니다.');try{if(state.role!=='entry')throw Error('이미 방에 입장했습니다.');if(!configured){notice('Firebase 설정이 없어 같은 브라우저 탭에서 이용할 데모 방을 만듭니다.');window.liveMode=false;beginDemoRoom();$('teacher-status').textContent='Firebase 설정이 없어 데모 방으로 진행합니다. 게임 PIN: '+state.pin;return}if(!firebaseConfig.databaseURL||!/^https:\/\//.test(firebaseConfig.databaseURL))throw Object.assign(Error('databaseURL 누락'),{code:'databaseURL'});if(!liveInitPromise)throw Error('Firebase 초기화가 시작되지 않았습니다.');await liveInitPromise;if(!live)throw Error('Firebase 연결을 준비하지 못했습니다.');if(!live.uid)live.uid=await live.signIn();if(!liveConnected)throw Object.assign(Error('network unavailable'),{code:'network'});await createLive()}catch(err){const message=liveError(err);connectionLabel('연결 안 됨');notice(message+' 같은 브라우저 탭에서 이용할 데모 방을 만들었습니다.');window.liveMode=false;beginDemoRoom();$('teacher-status').textContent=message+' 데모 방으로 진행합니다. 게임 PIN: '+state.pin}finally{button.disabled=false;button.innerHTML=original;button.removeAttribute('aria-busy');createBusy=false}});
  function connectionLabel(text){if(soloDemo)return;const label=text.startsWith('Firebase ')?text:'Firebase '+text;$('connection-pill').textContent=label;$('guide-status').textContent=label;$('guide-connection').textContent=label;$('connection-notice').textContent=label+(label==='Firebase 연결됨'?' · 여러 기기에서 같은 PIN으로 참가할 수 있습니다.':' · 현재는 같은 브라우저 탭의 데모 플레이를 이용할 수 있습니다.');}
  function liveView(room){
    if(!room){localStorage.removeItem('choice-live-session');stopLive();changeRole('entry');notice('방이 종료되었거나 만료되었습니다.');return}
@@ -633,32 +638,55 @@
  if(configured)connectionLabel('연결 안 됨');else initLive();
  </script>
   <script>
-  function renderSolo(){
-    $('demo-panel').hidden=false;
-    $('qr-code').hidden=true;$('qr-mode-note').textContent='데모 PIN은 이 브라우저에서만 사용합니다. 학생 선택은 아래에서 입력하세요.';
-    $('connection-pill').textContent='데모 모드 · Firebase 연결 없이 이 브라우저에서만 실행 중';
-    $('demo-choices').innerHTML=state.players.length?state.players.map(p=>'<div class="match canva-card"><span>'+escapeHtml(p.name)+(p.id===state.bye?' · 이번 라운드 휴식':'')+'</span><span><button class="btn secondary canva-button" type="button" data-demo-id="'+p.id+'" data-choice="rush" '+(state.phase!=='playing'||p.id===state.bye?'disabled':'')+' aria-pressed="'+(state.choices[p.id]==='rush')+'">당기기</button> <button class="btn secondary canva-button" type="button" data-demo-id="'+p.id+'" data-choice="dodge" '+(state.phase!=='playing'||p.id===state.bye?'disabled':'')+' aria-pressed="'+(state.choices[p.id]==='dodge')+'">힘 빼기</button> <span class="state">'+(state.choices[p.id]==='rush'?'당기기':state.choices[p.id]==='dodge'?'힘 빼기':'미선택')+'</span></span></div>').join(''):'<p class="empty">참가자가 없습니다. 이름을 입력해 추가하세요.</p>';
-    $('demo-reveal').disabled=state.phase!=='playing';
-    const pair=state.pairs[0],a=pair&&state.choices[pair[0]],b=pair&&state.choices[pair[1]],shown=['results','final'].includes(state.phase);
-    const pull=state.pairs.reduce((sum,[left,right])=>{const x=state.choices[left],y=state.choices[right];return sum+(!x||!y?0:x==='rush'&&y==='dodge'?-1:x==='dodge'&&y==='rush'?1:0)},0);
-    const distance=shown?Math.max(-90,Math.min(90,pull*42)):0;
-    $('demo-moving').style.transform='translateX('+distance+'px)';$('demo-tug').classList.toggle('victory',shown&&distance!==0);
-    $('demo-caption').textContent=shown?(pair?player(pair[0]).name+' vs '+player(pair[1]).name+' · '+(distance<0?'왼쪽으로 당겼어요':distance>0?'오른쪽으로 당겼어요':'중앙에서 팽팽해요'):'결과 공개'):'밧줄 중앙에서 준비 · 결과 공개 후 움직입니다.';
-    $('demo-tug').setAttribute('aria-label',$('demo-caption').textContent);
-    $('teacher-status').textContent=state.phase==='final'?'게임 종료 · 최종 순위를 확인하세요.':state.phase==='countdown'?'카운트다운 · 곧 선택을 시작합니다.':state.phase==='playing'?'라운드 진행 중 · 각 참가자의 선택을 직접 지정하세요.':state.phase==='results'?'결과 공개 완료 · 다음 라운드를 시작하세요.':state.players.length<1?'참가자를 한 명 이상 추가해 주세요.':'준비 완료 · 게임 시작을 누르세요.';
+  const DEMO_ACTIVE='classroom-tug-demo-active-v2', DEMO_PIN='classroom-tug-demo-pin-v2:', DEMO_CLIENT='classroom-tug-demo-client-v2';
+  let demoSessionId='',demoPin='',demoRole='',demoVersion=-1,demoActionId='',demoChannel=null,demoPoll=null,demoHostId='',demoParticipantId='';
+  const demoClientId=(()=>{try{let id=sessionStorage.getItem(DEMO_CLIENT);if(!id){id=crypto.randomUUID();sessionStorage.setItem(DEMO_CLIENT,id)}return id}catch(e){return tabId}})();
+  const demoKey=()=>DEMO_KEY+demoSessionId;
+  function demoError(detail){const text='데모 동기화 오류 · '+detail;$('demo-connection').hidden=false;$('demo-connection').textContent=text;if(state.role==='entry')notice(text);else (state.role==='teacher'?$('demo-message'):$('student-message')).textContent=text}
+  function readDemo(){try{const raw=localStorage.getItem(demoKey());if(!raw)throw Error('공유 상태가 없습니다.');const value=JSON.parse(raw);if(value.sessionId!==demoSessionId||value.pin!==demoPin||!Number.isInteger(value.version))throw Error('세션 정보가 일치하지 않습니다.');return value}catch(e){demoError(e.message);return null}}
+  function demoConnection(s){$('demo-connection').hidden=false;$('demo-connection').textContent='현재 연결된 데모 세션 · '+demoSessionId+' · '+s+' · 마지막 업데이트 '+(demoVersion>=0?new Date(demoLastUpdate).toLocaleTimeString('ko-KR'):'—')+' · version '+Math.max(0,demoVersion)}
+  let demoLastUpdate=0;
+  function applySharedState(shared){if(!soloDemo||window.liveMode||shared?.sessionId!==demoSessionId||shared?.pin!==demoPin)return;if(shared.version<demoVersion||shared.version===demoVersion&&(shared.actionId===demoActionId||demoVersion>=0))return;
+    demoVersion=shared.version;demoActionId=shared.actionId;demoLastUpdate=shared.updatedAt;demoHostId=shared.hostId;
+    Object.assign(state,{pin:shared.pin,players:shared.participants||[],round:shared.currentRound||0,phase:shared.phase||'setup',pairs:shared.pairs||[],bye:shared.bye||null,choices:shared.choices||{},history:shared.history||{},results:shared.results||{},deadline:shared.deadline||0,remaining:shared.remaining||0,paused:!!shared.paused,revealAt:shared.revealAt||0,approachEnd:shared.approachEnd||0});
+    state.me=demoRole==='student'?demoParticipantId:'';state.demoTestAction=shared.testAction||null;
+    if(shared.status==='ended'){stopDemo();changeRole('entry');notice('발표자가 데모 방을 종료했습니다.');return}
+    if(state.role!==demoRole)changeRole(demoRole);else render();
+    demoConnection('동기화됨');if(shared.testAction&&demoRole==='student')$('student-message').textContent='동기화 확인 · 관리자 테스트가 모든 창에 전달되었습니다.';
   }
-  function beginSolo(fresh=true){
-    if(fresh){localStorage.removeItem(DEMO_KEY);Object.assign(state,{pin:'DEMO01',me:'',players:[],round:0,phase:'setup',pairs:[],bye:null,choices:{},history:{},results:{},deadline:0,remaining:0,paused:false,revealAt:0,approachEnd:0})}
-    soloDemo=true;window.liveMode=false;changeRole('teacher');if(fresh)$('demo-message').textContent='참가자를 한 명 이상 추가해 주세요.';sync();render();
+  function demoWrite(action,mutate,hostOnly=true){if(!soloDemo||window.liveMode)return false;const old=readDemo();if(!old)return false;if(hostOnly&&(demoRole!=='teacher'||old.hostId!==demoClientId)){demoError('관리자 권한이 없습니다.');return false}if(!hostOnly&&demoRole!=='student')return false;
+    const next=structuredClone(old);if(mutate(next)===false)return false;
+    next.sessionId=demoSessionId;next.version=old.version+1;next.updatedAt=Date.now();next.actionId=crypto.randomUUID();next.role=demoRole;next.scores=Object.fromEntries(next.participants.map(p=>[p.id,p.score]));next.ropePosition=next.phase==='results'||next.phase==='final'?next.pairs.reduce((v,[a,b])=>v+(next.choices[a]==='rush'&&next.choices[b]==='dodge'?-42:next.choices[a]==='dodge'&&next.choices[b]==='rush'?42:0),0):0;
+    try{localStorage.setItem(demoKey(),JSON.stringify(next));demoChannel?.postMessage({sessionId:demoSessionId,version:next.version,actionId:next.actionId,state:next});applySharedState(next);return true}catch(e){demoError('저장 또는 채널 전송에 실패했습니다. '+e.message);return false}
   }
-  $('demo-button').onclick=()=>beginSolo();
-  $('demo-add').onclick=()=>{const name=$('demo-name').value.trim();if(!name){$('demo-message').textContent='참가자 이름을 입력해 주세요.';return}if(state.phase!=='setup'){$('demo-message').textContent='참가자는 게임 시작 전에만 추가할 수 있습니다.';return}if(state.players.some(p=>p.name.toLocaleLowerCase()===name.toLocaleLowerCase())){$('demo-message').textContent='이미 사용 중인 이름입니다.';return}state.players.push({id:'demo-'+crypto.randomUUID(),name,score:0,byes:0,lastBye:0});$('demo-name').value='';$('demo-message').textContent=name+' 참가자가 추가되었습니다.';sync();render()};
-  $('demo-name').addEventListener('keydown',e=>{if(e.key==='Enter'){$('demo-add').click()}});
-  $('demo-choices').onclick=e=>{const b=e.target.closest('button[data-demo-id]');if(!b||!soloDemo||state.phase!=='playing')return;state.choices[b.dataset.demoId]=b.dataset.choice;sync();render()};
-  $('demo-reveal').onclick=()=>{if(!soloDemo||state.phase!=='playing')return;finishRound();$('demo-message').textContent='결과를 공개했습니다. 순위와 밧줄을 확인하세요.'};
-  for(const id of ['start-button','next-button','pause-button','reset-button'])$(id).addEventListener('click',e=>{if(!soloDemo)return;e.stopImmediatePropagation();if(id==='start-button'||id==='next-button'){if(state.players.length<1){$('demo-message').textContent='참가자를 한 명 이상 추가해 주세요.';return}startRound()}else if(id==='pause-button')demoPause();else demoEnd()},true);
-  $('create-button').addEventListener('click',e=>{if(configured)return;e.preventDefault();e.stopImmediatePropagation();notice('Firebase 설정 필요 · 아래 데모로 시작하기 버튼을 눌러 이 브라우저에서 바로 플레이하세요.');$('demo-button').focus()},true);
-  try{const saved=JSON.parse(localStorage.getItem(DEMO_KEY)||'null');if(saved&&saved.pin==='DEMO01'&&Array.isArray(saved.players)&&saved.round>=0&&saved.round<=5){Object.assign(state,saved);beginSolo(false);$('demo-message').textContent='이 브라우저의 데모 게임을 복구했습니다.'}}catch(e){localStorage.removeItem(DEMO_KEY);notice('데모 복구에 실패했습니다. 새 데모 게임을 시작해 주세요.')}
+  function stopDemo(){clearInterval(demoPoll);demoPoll=null;window.removeEventListener('storage',onDemoStorage);window.removeEventListener('pagehide',pauseDemoListeners);try{demoChannel?.close()}catch(e){demoError('채널 종료에 실패했습니다.')}demoChannel=null;soloDemo=false;demoSessionId='';demoRole='';$('demo-connection').hidden=true;$('demo-panel').hidden=true;$('qr-code').hidden=false;try{localStorage.removeItem(DEMO_ACTIVE+':'+demoClientId)}catch(e){} }
+  function onDemoStorage(e){if(!soloDemo||window.liveMode)return;if(e.key===demoKey()){try{if(e.newValue)applySharedState(JSON.parse(e.newValue));else demoError('공유 상태를 찾을 수 없습니다.')}catch(err){demoError('상태 읽기에 실패했습니다. '+err.message)}}}
+  function pauseDemoListeners(){clearInterval(demoPoll);demoPoll=null;window.removeEventListener('storage',onDemoStorage);try{demoChannel?.close()}catch(e){demoError('채널 종료 오류: '+e.message)}demoChannel=null}
+  function watchDemo(){if(demoPoll)return;window.addEventListener('storage',onDemoStorage);window.addEventListener('pagehide',pauseDemoListeners);try{if('BroadcastChannel'in window){demoChannel=new BroadcastChannel('classroom-tug-demo-v2:'+demoSessionId);demoChannel.onmessage=e=>{try{const m=e.data;if(m?.sessionId!==demoSessionId||m.version<=demoVersion)return;applySharedState(m.state||readDemo())}catch(err){demoError('채널 메시지 오류: '+err.message)}};demoChannel.onmessageerror=()=>demoError('채널 메시지를 읽을 수 없습니다.')}}catch(e){demoChannel=null;demoError('채널 연결 오류: '+e.message)}
+    demoPoll=setInterval(()=>{if(!soloDemo||window.liveMode)return;const next=readDemo();if(next&&(next.version>demoVersion||next.updatedAt>demoLastUpdate))applySharedState(next)},350);
+  }
+  function connectDemo(pin,role,participantId=''){try{const id=localStorage.getItem(DEMO_PIN+pin);if(!id){notice('데모 세션이 없습니다. PIN을 확인해 주세요.');return false}const raw=localStorage.getItem(DEMO_KEY+id);if(!raw){notice('연결된 데모 세션이 없습니다. 관리자에게 새 방을 요청해 주세요.');return false}const saved=JSON.parse(raw);if(saved.sessionId!==id||saved.pin!==pin||saved.status==='ended'){notice('PIN이 잘못되었거나 종료된 데모 세션입니다.');return false}if(role==='teacher'&&saved.hostId!==demoClientId){notice('이 창에는 관리자 권한이 없습니다. 학생으로 참가해 주세요.');return false}if(soloDemo)stopDemo();demoSessionId=id;demoPin=pin;demoRole=role;demoParticipantId=participantId;demoVersion=-1;demoActionId='';soloDemo=true;window.liveMode=false;state.pin=pin;state.me=participantId;localStorage.setItem(DEMO_ACTIVE+':'+demoClientId,JSON.stringify({sessionId:id,pin,role,participantId,clientId:demoClientId}));demoConnection('연결 대기');changeRole(role);if(role==='teacher')makeQr();applySharedState(saved);watchDemo();return true}catch(e){demoError('세션 연결 실패: '+e.message);return false}}
+  function beginDemoRoom(){try{let pin,id;do{pin=Array.from(crypto.getRandomValues(new Uint8Array(6)),n=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[n%32]).join('')}while(localStorage.getItem(DEMO_PIN+pin));id=crypto.randomUUID();const now=Date.now();const room={sessionId:id,pin,version:1,updatedAt:now,actionId:crypto.randomUUID(),hostId:demoClientId,role:'teacher',status:'waiting',phase:'setup',currentRound:0,totalRounds:5,roundStartedAt:0,participants:[],choices:{},ropePosition:0,scores:{},results:{},pairs:[],bye:null,history:{},deadline:0,remaining:0,paused:false,revealAt:0,approachEnd:0};localStorage.setItem(DEMO_KEY+id,JSON.stringify(room));localStorage.setItem(DEMO_PIN+pin,id);connectDemo(pin,'teacher');$('demo-message').textContent='학생에게 PIN '+pin+'을 알려 주세요.'}catch(e){demoError('방 생성 실패: '+e.message)}}
+  function demoJoinRoom(e){e.preventDefault();const pin=$('pin-input').value.trim().toUpperCase(),name=$('name-input').value.trim();if(!/^[A-Z0-9]{6}$/.test(pin)||!name){notice('6자리 데모 PIN과 이름을 입력해 주세요.');return}let id;try{id=localStorage.getItem(DEMO_PIN+pin)}catch(err){demoError(err.message);return}if(!id){notice('데모 세션이 없습니다. PIN을 확인해 주세요.');return}let saved;try{saved=JSON.parse(localStorage.getItem(DEMO_KEY+id)||'null')}catch(err){demoError('세션 읽기 실패: '+err.message);return}if(!saved||saved.status==='ended'){notice('연결된 데모 세션이 없거나 종료되었습니다.');return}if(saved.phase!=='setup'&&!saved.participants.some(p=>p.id===demoClientId)){notice('게임이 이미 시작되어 새 참가자는 입장할 수 없습니다.');return}if(saved.participants.some(p=>p.name.toLocaleLowerCase()===name.toLocaleLowerCase()&&p.id!==demoClientId)){notice('이미 사용 중인 이름입니다.');return}if(!connectDemo(pin,'student',demoClientId))return;if(!saved.participants.some(p=>p.id===demoClientId))demoWrite('join',r=>{if(r.phase!=='setup'||r.participants.some(p=>p.name.toLocaleLowerCase()===name.toLocaleLowerCase()))return false;r.participants.push({id:demoClientId,name,score:0,byes:0,lastBye:0})},false);notice('')}
+  function demoPair(r){let pool=r.participants;r.bye=null;if(pool.length%2){let sorted=[...pool].sort((a,b)=>a.byes-b.byes||a.lastBye-b.lastBye||a.name.localeCompare(b.name,'ko'));let p=sorted[0];r.bye=p.id;p.byes++;p.lastBye=r.currentRound;pool=pool.filter(x=>x.id!==p.id)}else pool=[...pool];pool.sort((a,b)=>a.score-b.score||a.name.localeCompare(b.name,'ko'));r.pairs=[];while(pool.length){let a=pool.shift(),best=0,cost=Infinity;pool.forEach((b,i)=>{let key=[a.id,b.id].sort().join('|'),v=(r.history[key]||0)*1000+Math.abs(a.score-b.score)*.01+i*.001;if(v<cost){cost=v;best=i}});let b=pool.splice(best,1)[0],key=[a.id,b.id].sort().join('|');r.pairs.push([a.id,b.id]);r.history[key]=(r.history[key]||0)+1}}
+  function demoStartRound(){demoWrite('start',r=>{if(!['setup','results'].includes(r.phase)||r.currentRound>=5||!r.participants.length)return false;r.currentRound++;r.phase='countdown';r.status='playing';r.paused=false;r.choices={};r.results={};r.roundStartedAt=Date.now()+3000;r.deadline=r.roundStartedAt;r.revealAt=0;demoPair(r)})}
+  function demoFinish(){demoWrite('reveal',r=>{if(r.phase!=='playing')return false;for(const [a,b] of r.pairs){const x=r.choices[a],y=r.choices[b];if(!x||!y){r.results[a]=null;r.results[b]=null;continue}const ax=x===y?(x==='rush'?-50:20):x==='rush'?50:10,by=x===y?(y==='rush'?-50:20):y==='rush'?50:10;r.participants.find(p=>p.id===a).score+=ax;r.participants.find(p=>p.id===b).score+=by;r.results[a]=ax;r.results[b]=by}if(r.bye)r.results[r.bye]=null;r.phase=r.currentRound===5?'final':'results';r.revealAt=Date.now();r.deadline=r.revealAt+10000})}
+  function demoTick(){const r=readDemo();if(!r||r.hostId!==demoClientId||r.paused)return;if(r.phase==='countdown'&&Date.now()>=r.roundStartedAt)demoWrite('countdown',s=>{if(s.phase!=='countdown')return false;s.phase='playing';s.deadline=s.roundStartedAt+60000});else if(r.phase==='playing'&&(Date.now()>=r.deadline||r.pairs.length>0&&r.pairs.every(([a,b])=>r.choices[a]&&r.choices[b])))demoFinish()}
+  function renderSolo(){$('demo-panel').hidden=false;$('qr-code').hidden=false;$('qr-mode-note').textContent='같은 브라우저의 다른 탭에서 PIN으로 참가할 수 있습니다.';$('connection-pill').textContent='데모 모드 · 여러 탭 연결됨';$('demo-panel').querySelector('strong').textContent='데모 모드 · PIN '+state.pin;
+    $('demo-choices').innerHTML=state.players.length?state.players.map(p=>'<div class="match canva-card"><span>'+escapeHtml(p.name)+(p.id===state.bye?' · 이번 라운드 휴식':'')+'</span><span><button class="btn secondary canva-button" type="button" data-demo-id="'+escapeHtml(p.id)+'" data-choice="rush" '+(state.phase!=='playing'||p.id===state.bye||!!state.choices[p.id]?'disabled':'')+'>당기기</button> <button class="btn secondary canva-button" type="button" data-demo-id="'+escapeHtml(p.id)+'" data-choice="dodge" '+(state.phase!=='playing'||p.id===state.bye||!!state.choices[p.id]?'disabled':'')+'>힘 빼기</button> <span class="state">'+(state.choices[p.id]==='rush'?'당기기':state.choices[p.id]==='dodge'?'힘 빼기':'미선택')+'</span></span></div>').join(''):'<p class="empty">참가자가 없습니다. 학생이 PIN으로 입장하거나 이름을 추가하세요.</p>';
+    $('demo-reveal').disabled=state.phase!=='playing';const shown=['results','final'].includes(state.phase),r=readDemo(),distance=shown?Math.max(-90,Math.min(90,r?.ropePosition||0)):0;$('demo-moving').style.transform='translateX('+distance+'px)';$('demo-tug').classList.toggle('victory',shown&&distance!==0);$('demo-caption').textContent=shown?(distance<0?'왼쪽으로 당겼어요':distance>0?'오른쪽으로 당겼어요':'중앙에서 팽팽해요'):'밧줄 중앙에서 준비 · 결과 공개 후 움직입니다.';$('demo-tug').setAttribute('aria-label',$('demo-caption').textContent);
+  }
+  $('demo-button').onclick=beginDemoRoom;
+  $('demo-join-shortcut').onclick=()=>{$('entry-view').scrollIntoView({behavior:'smooth'});$('pin-input').focus()};
+  $('join-form').addEventListener('submit',e=>{if(localStorage.getItem(DEMO_PIN+$('pin-input').value.trim().toUpperCase())||!configured){e.stopImmediatePropagation();demoJoinRoom(e)}},true);
+  $('demo-add').onclick=()=>{let name=$('demo-name').value.trim();if(!name)return;$('demo-message').textContent=demoWrite('add',r=>{if(r.phase!=='setup'||r.participants.some(p=>p.name.toLocaleLowerCase()===name.toLocaleLowerCase()))return false;r.participants.push({id:'demo-'+crypto.randomUUID(),name,score:0,byes:0,lastBye:0})})?name+' 참가자가 추가되었습니다.':'참가자를 추가할 수 없습니다.';$('demo-name').value=''};
+  $('demo-name').onkeydown=e=>{if(e.key==='Enter')$('demo-add').click()};
+  $('demo-choices').onclick=e=>{const b=e.target.closest('button[data-demo-id]');if(b)demoWrite('choice',r=>{if(r.phase!=='playing'||r.paused||r.choices[b.dataset.demoId]||!r.participants.some(p=>p.id===b.dataset.demoId))return false;r.choices[b.dataset.demoId]=b.dataset.choice})};
+  $('demo-reveal').onclick=demoFinish;
+  $('demo-copy').onclick=()=>{const t=document.createElement('textarea');t.value=state.pin;document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();$('demo-message').textContent=ok?'학생용 데모 입장 코드 '+state.pin+' 복사 완료':'복사할 수 없습니다. PIN '+state.pin+'을 직접 전달해 주세요.'};
+  $('demo-test').onclick=()=>demoWrite('test',r=>{r.testAction={at:Date.now(),by:demoClientId};$('demo-message').textContent='동기화 테스트를 보냈습니다.'});
+  for(const id of ['start-button','next-button','pause-button','reset-button','rush-button','dodge-button'])$(id).addEventListener('click',e=>{if(!soloDemo||window.liveMode)return;e.preventDefault();e.stopImmediatePropagation();if(id==='start-button'||id==='next-button')demoStartRound();else if(id==='pause-button')demoWrite('pause',r=>{if(!['playing','results'].includes(r.phase))return false;if(r.paused){r.deadline=Date.now()+r.remaining;r.paused=false}else{r.remaining=Math.max(0,r.deadline-Date.now());r.paused=true}});else if(id==='reset-button'){const b=$(id);if(b.dataset.confirm!=='yes'){b.dataset.confirm='yes';b.textContent='방 종료 확인';setTimeout(()=>{b.dataset.confirm='';b.textContent='방 종료'},5000)}else{demoWrite('end',r=>{r.status='ended';r.phase='final'});b.dataset.confirm='';b.textContent='방 종료'}}else{const choice=id==='rush-button'?'rush':'dodge';demoWrite('choice',r=>{if(r.phase!=='playing'||r.paused||Date.now()>=r.deadline||!r.pairs.some(pair=>pair.includes(demoParticipantId))||r.choices[demoParticipantId])return false;r.choices[demoParticipantId]=choice},false)}},true);
+  try{const saved=JSON.parse(localStorage.getItem(DEMO_ACTIVE+':'+demoClientId)||'null');if(saved&&saved.clientId===demoClientId&&saved.sessionId===localStorage.getItem(DEMO_PIN+saved.pin)){if(!connectDemo(saved.pin,saved.role,saved.participantId))notice('데모 세션을 복구할 수 없습니다. PIN을 다시 확인해 주세요.')}}catch(e){demoError('복구 실패: '+e.message)}
   </script>
   <script type="module">
  // Firebase 초기화는 한 번만 수행하며 필요한 모듈만 불러옵니다.
