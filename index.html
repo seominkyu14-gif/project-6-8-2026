@@ -205,6 +205,7 @@
     .game-mode:not(.playing-mode) footer{color:#938d9c;margin-top:54px}
     @media(max-width:800px){.game-mode:not(.playing-mode) .layout{grid-template-columns:1fr}.game-mode:not(.playing-mode) .top{margin-bottom:40px}}
     @media(max-width:500px){body.entry-mode .entry-grid .card{padding:23px}.game-mode:not(.playing-mode) .shell{padding:20px 16px 42px}.game-mode:not(.playing-mode) .top{margin-bottom:32px}.game-mode:not(.playing-mode) .card{padding:22px}.game-mode:not(.playing-mode) .room-strip{justify-content:center;text-align:center}.game-mode:not(.playing-mode) .pin{font-size:43px}.game-mode:not(.playing-mode) .metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.game-mode:not(.playing-mode) .metric{padding:12px 7px}.game-mode:not(.playing-mode) .metric strong{font-size:20px}.game-mode:not(.playing-mode) .actions .btn{flex:1;min-width:125px}.game-mode:not(.playing-mode) .rules-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .guide{max-width:1040px;margin:28px auto 0}.guide summary{cursor:pointer;font-weight:800;color:#7136dc}.guide ol{line-height:1.9;padding-left:22px}.guide code{font-family:monospace;overflow-wrap:anywhere}.guide pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#21133d;color:#f5eaff;padding:15px;border-radius:12px;font-size:12px}.guide p,.guide li{font-size:13px}.entry-mode .guide,.game-mode:not(.playing-mode) .guide{background:#faf9fc;color:#342943;border-color:#eee9f5;box-shadow:none}.guide-status{font-weight:800}
   </style>
   <script src="/_sdk/bddf767fb065c21b.data_sdk.js" type="text/javascript" integrity="sha512-2vpLbebzZqyNGDHj4S/hNQer3IOu5izs2myxynH8/NvYQHh8EnUZgHGROXCT/+fDAmTcNSX4klehRoicmAFsqg=="></script>
   <script src="/_sdk/c9ef11482be3204a.editing_sdk.js" type="text/javascript" integrity="sha512-GcF9Lq6a3U33NGgsshrw8/hY7rjTpl4NDuXvweWqp3TAxzBi1E5Xz21APTRkMChgiUU0u/X8qm4s5PaAUqx37Q=="></script>
@@ -219,7 +220,7 @@
      </div>
      교실 선택 게임
     </div>
-    <div class="pill canva-tag">5라운드 · 방 기반 플레이 데모</div>
+    <div id="connection-pill" class="pill canva-tag">Supabase 설정 필요 · 데모 모드</div>
    </header>
    <main>
     <section class="hero canva-section" aria-labelledby="hero-title">
@@ -244,14 +245,14 @@
      </div>
     </section>
     <div class="notice canva-banner">
-     <i data-lucide="info"></i><span><strong>연결 범위 안내</strong> 이 데모는 같은 브라우저의 여러 탭 사이에서만 동기화됩니다. QR 코드나 PIN으로 서로 다른 기기를 실제 연결하려면 별도의 실시간 서버가 필요합니다. 다른 기기에서 이 페이지를 열어도 같은 방에 연결되지 않습니다.</span>
+     <i data-lucide="info"></i><span id="connection-notice"><strong>Supabase 설정 필요</strong> 설정 전에는 같은 브라우저 탭끼리만 연결되는 데모 모드로 동작합니다. 설정 후에는 여러 기기에서 같은 PIN으로 참가할 수 있습니다.</span>
     </div>
     <section id="entry-view" class="entry-grid canva-section" aria-label="게임 PIN으로 참가하기">
      <div class="card canva-card">
       <h2>학생 참가</h2>
-      <p class="sub">같은 브라우저에서 새 탭을 열고 PIN과 이름으로 입장해 보세요.</p>
+      <p class="sub">게임 PIN과 이름으로 입장하세요. 데모 모드에서는 같은 브라우저의 새 탭을 이용하세요.</p>
       <form id="join-form">
-       <label class="field-label" for="pin-input">게임 PIN</label> <input id="pin-input" class="field canva-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6자리 PIN" required> <label class="field-label" for="name-input">내 이름</label> <input id="name-input" class="field canva-input" maxlength="20" autocomplete="off" placeholder="이름 입력" required>
+       <label class="field-label" for="pin-input">게임 PIN</label> <input id="pin-input" class="field canva-input" autocapitalize="characters" pattern="[A-Za-z0-9]{6}" maxlength="6" placeholder="6자리 영숫자 PIN" required> <label class="field-label" for="name-input">내 이름</label> <input id="name-input" class="field canva-input" maxlength="20" autocomplete="off" placeholder="이름 입력" required>
        <div class="actions">
         <button class="btn canva-button" type="submit"><i data-lucide="arrow-right"></i> 방 입장</button>
        </div>
@@ -269,7 +270,7 @@
         <div id="room-pin" class="pin">------</div>
         <p class="sub" style="margin:8px 0 0">QR은 입장 페이지를 안내합니다.
          <br>
-         기기 간 연결은 지원하지 않습니다.</p>
+         <span id="qr-mode-note">데모 모드는 같은 브라우저에서만 작동합니다.</span></p>
        </div>
        <div id="qr-code" class="qr-box canva-panel" aria-label="학생 입장용 QR 코드"></div>
       </div>
@@ -336,6 +337,32 @@
       </ol>
      </aside>
     </div>
+    <details id="supabase-guide" class="card guide canva-panel">
+     <summary>Supabase 연결 가이드 · <span id="guide-status" class="guide-status">Supabase 설정 필요</span></summary>
+     <p>현재 연결 상태: <strong id="guide-connection">설정 필요</strong> · 필요한 설정 키: <code>SUPABASE_URL</code>, <code>SUPABASE_ANON_KEY</code></p>
+     <ol>
+      <li>Supabase 프로젝트를 생성합니다.</li>
+      <li>프로젝트 설정에서 Project URL과 anon public key를 확인합니다.</li>
+      <li>Authentication에서 익명 로그인을 활성화합니다.</li>
+      <li>SQL Editor에서 아래 테이블과 RLS 정책을 생성합니다.</li>
+      <li>Database의 Realtime에서 rooms, players, choices, round_results 테이블을 활성화합니다.</li>
+      <li>코드의 placeholder에 공개 환경설정을 입력합니다.</li>
+      <li>서로 다른 여러 기기에서 같은 PIN으로 테스트합니다.</li>
+     </ol>
+     <p><strong>개발용 예시 · 운영용 아님</strong> 다음 스키마는 게임에 필요한 열과 중복 방지 제약을 보여 줍니다. RLS는 반드시 활성화하고 방별 정책을 별도로 배포해야 합니다.</p>
+     <pre>create table rooms (room_id uuid primary key, pin text unique not null, host_id uuid not null, status text not null default 'waiting', created_at timestamptz not null default now(), current_round int not null default 0, total_rounds int not null default 5, phase text not null default 'setup', round_started_at timestamptz, deadline_at timestamptz, remaining_ms int default 0, paused boolean default false, pairs jsonb default '[]', bye_id uuid, history jsonb default '{}', reveal_at timestamptz);
+create table players (room_id uuid references rooms on delete cascade, player_id uuid not null, name text not null, role text not null default 'student', joined_at timestamptz default now(), score int default 0, byes int default 0, last_bye int default 0, primary key(room_id, player_id));
+create table choices (room_id uuid references rooms on delete cascade, round_number int not null, player_id uuid not null, choice text not null check(choice in ('rush','dodge')), submitted_at timestamptz default now(), primary key(room_id, round_number, player_id));
+create table round_results (room_id uuid references rooms on delete cascade, round_number int not null, player_id uuid not null, opponent_id uuid, choice text, opponent_choice text, points int, result text, revealed_at timestamptz default now(), primary key(room_id, round_number, player_id));
+alter table rooms enable row level security;
+alter table players enable row level security;
+alter table choices enable row level security;
+alter table round_results enable row level security;
+-- 개발 중에도 방별 SELECT, 발표자 UPDATE, 본인 INSERT 정책을 반드시 만드세요.
+-- 예: rooms의 UPDATE 정책은 (auth.uid() = host_id) 조건을 사용합니다.
+-- choices INSERT는 (auth.uid() = player_id)와 해당 방의 참가 여부를 검사합니다.</pre>
+     <p><strong>운영용 보안 강화</strong> PIN 조회 권한을 방별로 제한하고, 발표자 권한 검증, 학생별 본인 행 수정 제한, room_id별 접근 제한, 서버 측 결과·점수 검증과 방 만료 정책을 적용하세요. 특히 점수 확정은 트랜잭션 기반 서버 함수(RPC/Edge Function)로 옮겨야 조작과 중복 집계를 막을 수 있습니다. service_role 키와 관리자 비밀값은 브라우저 코드에 넣지 마세요.</p>
+    </details>
     <section class="card rules canva-section" aria-labelledby="rules-title">
      <h2 id="rules-title">점수 규칙</h2>
      <p class="sub">두 사람의 선택에 따라 각자 점수를 받습니다. 한쪽이라도 선택하지 않으면 해당 매칭은 득점하지 않습니다.</p>
@@ -367,7 +394,7 @@
   const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const send=(type,data={})=>channel.postMessage({type,pin:state.pin,from:tabId,...data});
   const player=id=>state.players.find(p=>p.id===id);
-  const seconds=()=>Math.max(0,Math.ceil((state.deadline-Date.now())/1000));
+  const seconds=()=>Math.max(0,Math.ceil((state.deadline-(window.liveMode?clock():Date.now()))/1000));
   function notice(text){$('entry-message').textContent=text;$('entry-message').hidden=!text}
   function snapshot(){return {players:state.players,round:state.round,phase:state.phase,pairs:state.pairs,bye:state.bye,choices:state.choices,history:state.history,results:state.results,deadline:state.deadline,remaining:state.remaining,paused:state.paused,revealAt:state.revealAt,approachEnd:state.approachEnd}}
   function sync(){if(state.role==='teacher')send('sync',{snapshot:snapshot()})}
@@ -382,14 +409,14 @@
     else target.innerHTML='<span class="qr-fallback">게임 PIN<br>'+state.pin+'</span>';
   }
   $('create-button').onclick=()=>{
-    state.pin=String(Math.floor(100000+Math.random()*900000));
+    state.pin=Array.from(crypto.getRandomValues(new Uint8Array(6)),n=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[n%32]).join('');
     state.me='';seen[tabId]=Date.now();
     changeRole('teacher');makeQr();sync();
   };
   $('join-form').onsubmit=e=>{
     e.preventDefault();
-    const pin=$('pin-input').value.trim(),name=$('name-input').value.trim();
-    if(!/^\d{6}$/.test(pin)||!name)return;
+    const pin=$('pin-input').value.trim().toUpperCase(),name=$('name-input').value.trim();
+    if(!/^[A-Z0-9]{6}$/.test(pin)||!name)return;
     state.pin=pin;
     notice('방을 찾는 중입니다. 같은 브라우저의 발표자 탭이 열려 있어야 합니다.');
     send('join',{name});
@@ -451,7 +478,7 @@
   $('rush-button').onclick=()=>choose('rush');
   $('dodge-button').onclick=()=>choose('dodge');
   channel.onmessage=({data:m})=>{
-    if(!m||m.from===tabId||m.pin!==state.pin)return;
+    if(window.liveMode||!m||m.from===tabId||m.pin!==state.pin)return;
     if(state.role==='teacher'){
       if(m.type==='join'){
         const name=String(m.name||'').trim().slice(0,20);
@@ -506,7 +533,7 @@
   function render(){
     document.body.classList.toggle('playing-mode',state.role!=='entry'&&state.phase==='playing');
     if(state.role==='entry')return;
-    const active=state.phase==='playing',timed=active||state.phase==='results',remaining=state.paused?Math.ceil(state.remaining/1000):seconds();
+    const active=state.phase==='playing',counting=state.phase==='countdown',timed=active||counting||state.phase==='results',remaining=state.paused?Math.ceil(state.remaining/1000):counting?Math.max(0,Math.ceil((state.deadline-60000-clock())/1000)):seconds();
     const sorted=[...state.players].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'ko'));
     $('board-subtitle').textContent=state.phase==='final'?'최종 결과 · 총 5라운드 완료':state.phase==='results'?'라운드 '+state.round+' 결과':active?'라운드 진행 중 · 현재 누적 점수':'게임이 시작되면 점수가 표시됩니다.';
     $('leaderboard').innerHTML=sorted.length?sorted.map((p,i)=>'<li class="board-item canva-list"><span class="rank">'+String(i+1).padStart(2,'0')+'</span><span class="board-name">'+escapeHtml(p.name)+'</span><span class="points">'+p.score+'점</span>'+(state.phase==='results'||state.phase==='final'?'<span class="delta">'+(state.results[p.id]==null?'—':(state.results[p.id]>=0?'+':'')+state.results[p.id])+'</span>':'')+'</li>').join(''):'<li class="empty">아직 기록이 없습니다.</li>';
@@ -517,7 +544,7 @@
       const online=state.players.filter(p=>Date.now()-(seen[p.id]||0)<5000).length;
       $('player-count').innerHTML=online+'<em> / '+state.players.length+' 명</em>';
       $('round-number').textContent=state.round?state.round+' / 5':'준비';
-      $('time-left').textContent=timed?(state.paused?'일시 정지':remaining+'초'):'—';
+      $('time-left').textContent=timed?(state.paused?'일시 정지':counting?'시작 '+remaining+'초':remaining+'초'):'—';
       $('start-button').hidden=state.phase!=='setup';
       $('start-button').disabled=state.players.length<2;
       $('pause-button').hidden=!timed;
@@ -533,7 +560,7 @@
       $('waiting-name').textContent=me?.name||'입장 확인 중';
       $('student-intro').textContent=state.phase==='setup'?'발표자가 게임을 시작할 때까지 기다려 주세요.':state.phase==='final'?'5라운드가 모두 끝났습니다.':'내 상대를 확인하고 선택해 주세요.';
       $('student-round').textContent=state.round+' / 5';
-      $('student-time').textContent=timed?(state.paused?'정지':remaining+'초'):'종료';
+      $('student-time').textContent=timed?(state.paused?'정지':counting?'시작 '+remaining+'초':remaining+'초'):'종료';
       $('my-score').textContent=(me?.score||0)+'점';
       $('opponent-name').textContent=state.bye===state.me?'이번 라운드 휴식':opponent?.name||'다음 라운드 대기';
       $('round-hint').textContent=state.phase==='results'?'결과 확인 중':state.phase==='final'?'게임 종료':state.paused?'발표자가 일시 정지했습니다.':'라운드 '+state.round+' · 남은 시간 '+remaining+'초';
@@ -545,6 +572,7 @@
     }
   }
   setInterval(()=>{
+    if(window.liveMode){if(state.role!=='entry')render();return}
     if(state.role==='student'){if(Date.now()-lastHeartbeat>1000){send('heartbeat');lastHeartbeat=Date.now()}if(Date.now()-lastSync>3000){send('sync-request');lastSync=Date.now()}}
     if(state.role==='teacher'&&!state.paused){
       if(state.phase==='playing'&&Date.now()>=state.deadline)finishRound();
@@ -553,8 +581,93 @@
     if(state.role!=='entry')render();
   },500);
   const pinFromUrl=new URLSearchParams(location.search).get('pin');
-  if(pinFromUrl&&/^\d{6}$/.test(pinFromUrl))$('pin-input').value=pinFromUrl;
+  if(pinFromUrl&&/^[A-Z0-9]{6}$/i.test(pinFromUrl))$('pin-input').value=pinFromUrl.toUpperCase();
   lucide.createIcons();
 </script>
+  <script type="text/plain">
+ // 개발자 설정: Firebase 콘솔의 웹 앱 공개 설정만 입력하세요. 서비스 계정 키나 관리자 비밀값은 절대 넣지 마세요.
+ const FIREBASE_CONFIG={apiKey:'YOUR_API_KEY',authDomain:'YOUR_AUTH_DOMAIN',databaseURL:'YOUR_DATABASE_URL',projectId:'YOUR_PROJECT_ID',appId:'YOUR_APP_ID'};
+ const demoCreate=$('create-button').onclick,demoJoin=$('join-form').onsubmit,demoRush=$('rush-button').onclick,demoDodge=$('dodge-button').onclick,demoStart=$('start-button').onclick,demoNext=$('next-button').onclick,demoPause=$('pause-button').onclick,demoEnd=$('reset-button').onclick;
+ const REQUIRED_KEYS=['apiKey','authDomain','databaseURL','projectId','appId'];
+ const configured=REQUIRED_KEYS.every(k=>FIREBASE_CONFIG[k]&&!FIREBASE_CONFIG[k].startsWith('YOUR_'));
+ window.liveMode=false;
+ let live=null,unsubRoom=null,unsubConnection=null,liveRoomId='',serverOffset=0,liveBusy=false,liveTick=null,liveConnected=false,liveSession=null;
+ const clock=()=>Date.now()+serverOffset;
+ const liveError=e=>{const code=e?.code||'';return code.includes('permission')?'권한 오류입니다. 데이터베이스 규칙과 익명 로그인을 확인해 주세요.':code.includes('network')||code.includes('unavailable')?'연결 오류입니다. 인터넷 연결을 확인해 주세요.':e?.message||'요청을 처리하지 못했습니다.'};
+ function connectionLabel(text){$('connection-pill').textContent=text;$('guide-status').textContent=text;$('connection-notice').textContent=text+(text==='연결됨'?' · 여러 기기에서 같은 PIN으로 참가할 수 있습니다.':' · 현재는 같은 브라우저 탭의 데모 플레이를 이용할 수 있습니다.');}
+ function liveView(room){
+   if(!room){localStorage.removeItem('choice-live-session');stopLive();changeRole('entry');notice('방이 종료되었거나 만료되었습니다.');return}
+   if(room.createdAt&&clock()-room.createdAt>86400000){notice('방이 만료되었습니다. 새 방을 만들어 주세요.');stopLive();changeRole('entry');return}
+   state.pin=room.pin;state.round=room.currentRound||0;state.phase=room.phase||'setup';state.players=Object.entries(room.players||{}).map(([id,p])=>({id,...p}));state.pairs=Object.values(room.matches?.[state.round]||{}).filter(p=>Array.isArray(p));state.bye=room.bye||null;state.choices=room.choices?.[state.round]||{};state.results=room.results?.[state.round]||{};state.history=room.history||{};state.deadline=room.deadline||0;state.remaining=room.remaining||0;state.paused=!!room.paused;state.revealAt=room.revealAt||0;state.approachEnd=room.approachEnd||0;
+   if(room.status==='ended'){stopLive();changeRole('entry');notice('발표자가 방을 종료했습니다.');return}
+   if(state.role==='student'&&!room.players?.[state.me]){stopLive();changeRole('entry');notice('참가자 정보를 찾을 수 없습니다. 다시 입장해 주세요.');return}
+   if(state.role==='teacher'){state.players.forEach(p=>seen[p.id]=p.lastSeen||0);$('qr-mode-note').textContent='연결된 기기에서 QR 또는 PIN으로 참가할 수 있습니다.'}
+   render();
+   if(state.role==='teacher'&&!liveBusy&&liveConnected){
+     if(state.phase==='playing'&&!state.paused&&(clock()>=state.deadline||state.pairs.every(([a,b])=>state.choices[a]&&state.choices[b])))liveFinish();
+     else if(state.phase==='results'&&!state.paused&&clock()>=state.deadline)liveStart();
+   }
+ }
+ function stopLive(){if(unsubRoom){unsubRoom();unsubRoom=null}liveRoomId='';sessionStorage.removeItem('choice-live-session');clearInterval(liveTick);liveTick=null}
+ function watchRoom(id){if(unsubRoom)unsubRoom();liveRoomId=id;unsubRoom=live.watch('rooms/'+id,liveView,e=>{notice(liveError(e));connectionLabel('연결 안 됨')});clearInterval(liveTick);liveTick=setInterval(()=>{if(state.role==='teacher'&&liveConnected&&!liveBusy){if(state.phase==='playing'&&!state.paused&&clock()>=state.deadline)liveFinish();if(state.phase==='results'&&!state.paused&&clock()>=state.deadline)liveStart()}if(state.role==='student'&&liveConnected)live.update('rooms/'+id+'/players/'+state.me,{lastSeen:live.timestamp()}).catch(()=>{});},1000)}
+ function livePair(players,round,history){let pool=Object.entries(players).map(([id,p])=>({id,...p})),bye=null;if(pool.length%2){pool.sort((a,b)=>(a.byes||0)-(b.byes||0)||(a.lastBye||0)-(b.lastBye||0)||a.name.localeCompare(b.name,'ko'));bye=pool.shift().id;players[bye].byes=(players[bye].byes||0)+1;players[bye].lastBye=round}pool.sort((a,b)=>a.score-b.score||a.name.localeCompare(b.name,'ko'));let pairs=[];while(pool.length){let a=pool.shift(),best=0,cost=Infinity;pool.forEach((b,i)=>{let key=[a.id,b.id].sort().join('|'),c=(history[key]||0)*1000+Math.abs(a.score-b.score)*.01+i*.001;if(c<cost){cost=c;best=i}});let b=pool.splice(best,1)[0],key=[a.id,b.id].sort().join('|');history[key]=(history[key]||0)+1;pairs.push([a.id,b.id])}return {pairs,bye}}
+ async function hostChange(fn){if(!liveConnected){notice('연결 안 됨 · 연결이 복구될 때까지 진행할 수 없습니다.');return}if(liveBusy)return;liveBusy=true;try{await live.transaction('rooms/'+liveRoomId,room=>{if(!room||room.hostId!==live.uid||room.status==='ended')return;return fn(room)||undefined})}catch(e){notice(liveError(e))}finally{liveBusy=false}}
+ function liveStart(){hostChange(room=>{if(!['setup','results'].includes(room.phase)||room.paused||room.currentRound>=5||Object.keys(room.players||{}).length<2)return;let n=room.currentRound+1,players=room.players,history=room.history||{},paired=livePair(players,n,history);room.currentRound=n;room.status='playing';room.phase='countdown';room.players=players;room.history=history;room.matches=room.matches||{};room.matches[n]=paired.pairs;room.bye=paired.bye;room.choices=room.choices||{};room.choices[n]={};room.results=room.results||{};room.results[n]={};room.roundStartAt=clock()+3000;room.deadline=room.roundStartAt+60000;room.paused=false;room.remaining=0;return room}).then?.(()=>{})}
+ function liveFinish(){hostChange(room=>{if(room.phase!=='playing'||room.paused)return;let n=room.currentRound,choices=room.choices?.[n]||{},pairs=Object.values(room.matches?.[n]||{}),all=pairs.every(([a,b])=>choices[a]&&choices[b]);if(!all&&clock()<room.deadline)return;let result={};pairs.forEach(([a,b])=>{let x=choices[a],y=choices[b];if(!x||!y){result[a]=null;result[b]=null;return}let ax=x===y?(x==='rush'?-50:20):(x==='rush'?50:10),by=x===y?(y==='rush'?-50:20):(y==='rush'?50:10);room.players[a].score+=ax;room.players[b].score+=by;result[a]=ax;result[b]=by});if(room.bye)result[room.bye]=null;room.results[n]=result;room.scores=Object.fromEntries(Object.entries(room.players).map(([id,p])=>[id,p.score]));room.phase=n===5?'final':'results';room.approachEnd=Math.min(1,Math.max(0,(60000-Math.max(0,room.deadline-clock()))/60000));room.revealAt=clock();room.deadline=clock()+10000;return room})}
+ async function liveChoose(choice){if(!liveConnected){$('student-message').textContent='연결 안 됨 · 선택을 제출할 수 없습니다.';return}try{await live.transaction('rooms/'+liveRoomId,room=>{if(!room||room.phase!=='playing'||room.paused||clock()>=room.deadline||!room.players?.[state.me]||room.bye===state.me||!Object.values(room.matches?.[room.currentRound]||{}).some(p=>p.includes(state.me))||room.choices?.[room.currentRound]?.[state.me])return;room.choices=room.choices||{};room.choices[room.currentRound]=room.choices[room.currentRound]||{};room.choices[room.currentRound][state.me]=choice;return room})}catch(e){$('student-message').textContent=liveError(e)}}
+ async function createLive(){if(!liveConnected){window.liveMode=false;demoCreate();notice('연결 안 됨 · 같은 브라우저 탭의 데모 방을 만들었습니다.');return}try{let roomId=crypto.randomUUID().replaceAll('-',''),alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',pin;for(let i=0;i<8;i++){pin=Array.from(crypto.getRandomValues(new Uint8Array(6)),n=>alphabet[n%alphabet.length]).join('');if(!await live.get('pins/'+pin))break}if(await live.get('pins/'+pin))throw Error('PIN 생성에 실패했습니다. 다시 시도해 주세요.');let room={status:'waiting',hostId:live.uid,pin,createdAt:live.timestamp(),currentRound:0,totalRounds:5,phase:'setup',players:{},matches:{},choices:{},scores:{},results:{},history:{}};await live.update('',{['rooms/'+roomId]:room,['pins/'+pin]:roomId});window.liveMode=true;state.pin=pin;changeRole('teacher');makeQr();sessionStorage.setItem('choice-live-session',JSON.stringify({roomId,role:'teacher',pin}));watchRoom(roomId)}catch(e){notice(liveError(e))}}
+ async function joinLive(e){e.preventDefault();let pin=$('pin-input').value.trim().toUpperCase(),name=$('name-input').value.trim();if(!/^[A-Z0-9]{6}$/.test(pin)||!name){notice('6자리 영숫자 PIN과 이름을 입력해 주세요.');return}if(!liveConnected){window.liveMode=false;demoJoin(e);return}notice('방을 찾는 중입니다.');try{let id=await live.get('pins/'+pin);if(!id){notice('잘못된 PIN이거나 방이 없습니다.');return}let room=await live.get('rooms/'+id);if(!room){notice('방이 없거나 만료되었습니다.');return}if(clock()-(room.createdAt||clock())>86400000){notice('방이 만료되었습니다.');return}if(room.status!=='waiting'){notice('이미 게임이 시작되어 늦은 입장은 불가능합니다.');return}let outcome=await live.transaction('rooms/'+id,r=>{if(!r||r.status!=='waiting'||Object.entries(r.players||{}).some(([uid,p])=>uid!==live.uid&&p.name.toLocaleLowerCase()===name.toLocaleLowerCase()))return;r.players=r.players||{};r.players[live.uid]={name,score:0,byes:0,lastBye:0,lastSeen:live.timestamp()};r.scores=r.scores||{};r.scores[live.uid]=0;return r});if(!outcome.committed){notice('입장할 수 없습니다. 이름이 중복되었거나 게임이 시작되었습니다.');return}window.liveMode=true;state.pin=pin;state.me=live.uid;changeRole('student');sessionStorage.setItem('choice-live-session',JSON.stringify({roomId:id,role:'student',pin}));watchRoom(id);notice('')}catch(err){notice(liveError(err))}}
+ async function restoreLive(){try{let s=JSON.parse(sessionStorage.getItem('choice-live-session')||'null');if(!s||!liveConnected)return;let room=await live.get('rooms/'+s.roomId);if(!room||room.status==='ended'||(room.createdAt&&clock()-room.createdAt>86400000)||s.role==='teacher'&&room.hostId!==live.uid||s.role==='student'&&!room.players?.[live.uid]){sessionStorage.removeItem('choice-live-session');notice('방을 복구할 수 없습니다. PIN을 다시 확인해 주세요.');return}window.liveMode=true;state.pin=s.pin;state.me=s.role==='student'?live.uid:'';changeRole(s.role);if(s.role==='teacher')makeQr();watchRoom(s.roomId)}catch(e){notice(liveError(e))}}
+ async function initLive(){if(!configured){connectionLabel('Firebase 설정 필요');return}try{live=await window.firebaseReady;live.uid=await live.signIn();serverOffset=await live.get('.info/serverTimeOffset')||0;unsubConnection=live.watch('.info/connected',v=>{liveConnected=!!v;connectionLabel(v?'연결됨':'연결 안 됨');if(v)restoreLive()});$('create-button').onclick=createLive;$('join-form').onsubmit=joinLive;$('rush-button').onclick=()=>liveChoose('rush');$('dodge-button').onclick=()=>liveChoose('dodge');$('start-button').onclick=liveStart;$('next-button').onclick=liveStart;$('pause-button').onclick=()=>hostChange(r=>{if(!['playing','results'].includes(r.phase))return;if(r.paused){r.deadline=clock()+r.remaining;r.paused=false}else{r.remaining=Math.max(0,r.deadline-clock());r.paused=true}return r});$('reset-button').onclick=async()=>{let b=$('reset-button');if(b.dataset.confirm!=='yes'){b.dataset.confirm='yes';b.textContent='방 종료 확인';setTimeout(()=>{b.dataset.confirm='';b.textContent='방 종료'},5000);return}await hostChange(r=>{r.status='ended';r.phase='final';return r});try{await live.remove('pins/'+state.pin)}catch(e){}stopLive();changeRole('entry');b.dataset.confirm='';b.textContent='방 종료'};setInterval(()=>{if(!window.liveMode||!liveConnected||state.role!=='teacher')return;if(state.phase==='countdown'&&clock()>=state.deadline-60000)hostChange(r=>{if(r.phase!=='countdown'||clock()<r.roundStartAt)return;r.phase='playing';return r});},250)}catch(e){connectionLabel('연결 안 됨');notice(liveError(e)+' 데모 모드로 이용할 수 있습니다.')}}
+ if(configured)connectionLabel('연결 안 됨');else initLive();
+ </script>
+  <script type="text/plain">
+ // Firebase 초기화는 한 번만 수행하며 필요한 모듈만 불러옵니다.
+ if(configured){window.firebaseReady=(async()=>{const [app,auth,db]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js')]);const instance=app.getApps().length?app.getApp():app.initializeApp(FIREBASE_CONFIG);const database=db.getDatabase(instance),authentication=auth.getAuth(instance);return {timestamp:db.serverTimestamp,signIn:async()=>{let user=authentication.currentUser||(await auth.signInAnonymously(authentication)).user;return user.uid},get:async path=>(await db.get(db.ref(database,path))).val(),watch:(path,ok,fail)=>db.onValue(db.ref(database,path),s=>ok(s.val()),fail),update:(path,data)=>db.update(db.ref(database,path),data),remove:path=>db.remove(db.ref(database,path)),transaction:(path,fn)=>db.runTransaction(db.ref(database,path),fn,{applyLocally:false})}})();initLive()}
+ </script>
+  <script type="module">
+  // 공개 설정만 입력하세요. 관리자 키는 넣지 마세요.
+  const SUPABASE_URL='YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_KEY';
+  const ready=SUPABASE_URL.startsWith('https://')&&!SUPABASE_ANON_KEY.startsWith('YOUR_');
+  const status=(s)=>{ $('connection-pill').textContent=s+(s==='설정 필요'?' · 데모 모드':'');$('guide-status').textContent='Supabase '+s;$('guide-connection').textContent=s;$('connection-notice').textContent=s==='연결됨'?'Supabase 연결됨 · 여러 기기에서 같은 PIN으로 참가할 수 있습니다.':'Supabase '+s+' · 같은 브라우저 탭에서 데모 플레이를 이용할 수 있습니다.'};
+  status(ready?'연결 안 됨':'설정 필요');
+  if(ready){
+    // 초기화 Promise를 공유해 중복 클라이언트를 생성하지 않습니다.
+    window.supabaseClientPromise ||= import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm').then(m=>m.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}}));
+    let client,uid,roomId='',room=null,realtime=null,offset=0,busy=false,submitting=false,refreshing=false;
+    const clock=()=>Date.now()+offset;window.clock=clock;
+    const iso=ms=>new Date(ms).toISOString();
+    const err=e=>{const c=e?.code||'';return c==='42501'||c==='PGRST301'?'권한 오류입니다. RLS 정책과 익명 로그인을 확인해 주세요.':c==='23505'?'이미 제출했거나 PIN 또는 이름이 중복되었습니다.':c==='PGRST116'?'방을 찾지 못했습니다. PIN을 확인해 주세요.':'연결 오류입니다. 인터넷 연결과 Supabase 설정을 확인해 주세요. '+(e?.message||'')};
+    async function request(q){const {data,error}=await q;if(error)throw error;return data}
+    async function timeSync(){try{const t=Date.now(),r=await fetch(SUPABASE_URL+'/rest/v1/rooms?select=room_id&limit=0',{method:'HEAD',headers:{apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+(await client.auth.getSession()).data.session.access_token}});if(r.headers.get('Date'))offset=Date.parse(r.headers.get('Date'))-(t+Date.now())/2}catch{}}
+    async function unsubscribe(){if(realtime){await client.removeChannel(realtime);realtime=null}roomId=''}
+    async function load(){if(!roomId||refreshing)return;refreshing=true;try{
+      room=await request(client.from('rooms').select('*').eq('room_id',roomId).maybeSingle());
+      if(!room||room.status==='ended'||clock()-Date.parse(room.created_at)>86400000){await unsubscribe();sessionStorage.removeItem('choice-supabase-session');changeRole('entry');notice('방이 종료되었거나 만료되었습니다.');return}
+      if(state.role==='teacher'&&room.host_id!==uid)throw Error('발표자 권한이 없습니다.');
+      const [players,choices,results]=await Promise.all([request(client.from('players').select('*').eq('room_id',roomId)),request(client.from('choices').select('*').eq('room_id',roomId).eq('round_number',room.current_round)),request(client.from('round_results').select('*').eq('room_id',roomId).eq('round_number',room.current_round))]);
+      if(state.role==='student'&&!players.some(p=>p.player_id===uid)){await unsubscribe();changeRole('entry');notice('참가 정보가 없습니다. 다시 입장해 주세요.');return}
+      state.pin=room.pin;state.round=room.current_round;state.phase=room.phase;state.players=players.map(p=>({id:p.player_id,name:p.name,score:p.score,byes:p.byes,lastBye:p.last_bye}));state.pairs=room.pairs||[];state.bye=room.bye_id;state.history=room.history||{};state.choices=Object.fromEntries(choices.map(c=>[c.player_id,c.choice]));state.results=Object.fromEntries(results.map(r=>[r.player_id,r.points]));state.deadline=Date.parse(room.deadline_at)||0;state.remaining=room.remaining_ms||0;state.paused=room.paused;state.revealAt=Date.parse(room.reveal_at)||0;state.approachEnd=room.round_started_at?Math.min(1,(state.revealAt-Date.parse(room.round_started_at))/60000):0;
+      if(state.phase==='countdown'&&clock()>=Date.parse(room.round_started_at))state.phase='playing';
+      state.deadline-=offset;state.revealAt-=offset;
+      state.players.forEach(p=>seen[p.id]=Date.now());render();
+      if(state.role==='teacher')advance();
+    }catch(e){notice(err(e));status('연결 안 됨')}finally{refreshing=false}}
+    function watch(id){if(roomId===id&&realtime)return;unsubscribe().then(()=>{roomId=id;realtime=client.channel('game-'+id).on('postgres_changes',{event:'*',schema:'public',table:'rooms',filter:'room_id=eq.'+id},load).on('postgres_changes',{event:'*',schema:'public',table:'players',filter:'room_id=eq.'+id},load).on('postgres_changes',{event:'*',schema:'public',table:'choices',filter:'room_id=eq.'+id},load).on('postgres_changes',{event:'*',schema:'public',table:'round_results',filter:'room_id=eq.'+id},load).subscribe(s=>{if(s==='SUBSCRIBED'){status('연결됨');load()}if(s==='CHANNEL_ERROR'||s==='TIMED_OUT'||s==='CLOSED'){status('연결 안 됨');notice('실시간 연결이 끊겼습니다. 다시 연결하는 중입니다.')}});load()})}
+    function pairing(){let pool=[...state.players],bye=null,h={...state.history};if(pool.length%2){pool.sort((a,b)=>a.byes-b.byes||a.lastBye-b.lastBye);bye=pool.shift().id}pool.sort((a,b)=>a.score-b.score||a.name.localeCompare(b.name,'ko'));const pairs=[];while(pool.length){let a=pool.shift(),index=0,cost=Infinity;pool.forEach((b,i)=>{let key=[a.id,b.id].sort().join('|'),v=(h[key]||0)*1000+Math.abs(a.score-b.score)*.01+i*.001;if(v<cost){index=i;cost=v}});let b=pool.splice(index,1)[0],key=[a.id,b.id].sort().join('|');h[key]=(h[key]||0)+1;pairs.push([a.id,b.id])}return {pairs,bye,h}}
+    async function host(fn){if(state.role!=='teacher'||room?.host_id!==uid){notice('발표자만 게임을 진행할 수 있습니다.');return}if(busy)return;busy=true;try{await fn();await load()}catch(e){notice(err(e))}finally{busy=false}}
+    async function start(){await host(async()=>{if(!['setup','results'].includes(room.phase)||state.players.length<2||room.current_round>=5)return;await timeSync();const {pairs,bye,h}=pairing(),startAt=clock()+3000;await request(client.from('rooms').update({status:'playing',phase:'countdown',current_round:room.current_round+1,round_started_at:iso(startAt),deadline_at:iso(startAt+60000),paused:false,remaining_ms:0,pairs,bye_id:bye,history:h,reveal_at:null}).eq('room_id',roomId).eq('host_id',uid).eq('current_round',room.current_round));if(bye){let p=state.players.find(p=>p.id===bye);await request(client.from('players').update({byes:p.byes+1,last_bye:room.current_round+1}).eq('room_id',roomId).eq('player_id',bye))}})}
+    async function finish(){await host(async()=>{if(room.phase!=='playing'||room.paused)return;const rows=[];for(const [a,b] of room.pairs){let x=state.choices[a],y=state.choices[b],ax=!x||!y?null:x===y?(x==='rush'?-50:20):x==='rush'?50:10,by=!x||!y?null:x===y?(y==='rush'?-50:20):y==='rush'?50:10;rows.push({room_id:roomId,round_number:room.current_round,player_id:a,opponent_id:b,choice:x||null,opponent_choice:y||null,points:ax,result:ax===null?'미완료':'완료'},{room_id:roomId,round_number:room.current_round,player_id:b,opponent_id:a,choice:y||null,opponent_choice:x||null,points:by,result:by===null?'미완료':'완료'})}if(room.bye_id)rows.push({room_id:roomId,round_number:room.current_round,player_id:room.bye_id,points:null,result:'휴식'});await request(client.from('round_results').upsert(rows,{onConflict:'room_id,round_number,player_id'}));for(const r of rows){if(r.points!==null){const p=state.players.find(p=>p.id===r.player_id);await request(client.from('players').update({score:p.score+r.points}).eq('room_id',roomId).eq('player_id',r.player_id))}}await request(client.from('rooms').update({phase:room.current_round===5?'final':'results',reveal_at:iso(clock()),deadline_at:iso(clock()+10000)}).eq('room_id',roomId).eq('host_id',uid).eq('phase','playing'))})}
+    async function advance(){if(busy||!room)return;const now=clock();if(room.phase==='countdown'&&now>=Date.parse(room.round_started_at))host(()=>request(client.from('rooms').update({phase:'playing'}).eq('room_id',roomId).eq('host_id',uid).eq('phase','countdown')));else if(room.phase==='playing'&&!room.paused&&(now>=Date.parse(room.deadline_at)||room.pairs.length&&room.pairs.every(([a,b])=>state.choices[a]&&state.choices[b])))finish();else if(room.phase==='results'&&!room.paused&&now>=Date.parse(room.deadline_at))start()}
+    async function chooseLive(choice){if(submitting||state.role!=='student'||room?.phase!=='playing'||room.paused||clock()>=Date.parse(room.deadline_at)||state.choices[uid]||!room.pairs.some(pair=>pair.includes(uid)))return;submitting=true;try{await request(client.from('choices').insert({room_id:roomId,round_number:room.current_round,player_id:uid,choice}));state.choices[uid]=choice;render();await load()}catch(e){$('student-message').textContent=err(e)}finally{submitting=false}}
+    $('create-button').onclick=async()=>{try{await timeSync();let pin=Array.from(crypto.getRandomValues(new Uint8Array(6)),n=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[n%32]).join(''),id=crypto.randomUUID();await request(client.from('rooms').insert({room_id:id,pin,host_id:uid,status:'waiting',current_round:0,total_rounds:5,phase:'setup',created_at:iso(clock())}));window.liveMode=true;state.pin=pin;changeRole('teacher');makeQr();$('qr-mode-note').textContent='다른 기기에서도 QR 또는 PIN으로 참가할 수 있습니다.';sessionStorage.setItem('choice-supabase-session',JSON.stringify({id,role:'teacher'}));watch(id)}catch(e){notice(err(e)+' 데모 모드를 이용할 수 있습니다.' );window.liveMode=false}};
+    $('join-form').onsubmit=async e=>{e.preventDefault();let pin=$('pin-input').value.trim().toUpperCase(),name=$('name-input').value.trim();if(!/^[A-Z0-9]{6}$/.test(pin)||!name){notice('6자리 PIN과 이름을 입력해 주세요.');return}try{let r=await request(client.from('rooms').select('*').eq('pin',pin).maybeSingle());if(!r){notice('잘못된 PIN이거나 방이 없습니다.');return}if(clock()-Date.parse(r.created_at)>86400000){notice('방이 만료되었습니다.');return}if(r.status!=='waiting'){notice('게임이 이미 시작되어 늦은 입장은 불가능합니다.');return}await request(client.from('players').insert({room_id:r.room_id,player_id:uid,name,role:'student',score:0}));window.liveMode=true;state.pin=pin;state.me=uid;changeRole('student');sessionStorage.setItem('choice-supabase-session',JSON.stringify({id:r.room_id,role:'student'}));notice('');watch(r.room_id)}catch(ex){notice(err(ex))}};
+    $('rush-button').onclick=()=>chooseLive('rush');$('dodge-button').onclick=()=>chooseLive('dodge');$('start-button').onclick=start;$('next-button').onclick=start;
+    $('pause-button').onclick=()=>host(async()=>{if(!['playing','results'].includes(room.phase))return;await request(client.from('rooms').update(room.paused?{paused:false,deadline_at:iso(clock()+room.remaining_ms)}:{paused:true,remaining_ms:Math.max(0,Date.parse(room.deadline_at)-clock())}).eq('room_id',roomId).eq('host_id',uid))});
+    $('reset-button').onclick=async()=>{let b=$('reset-button');if(b.dataset.confirm!=='yes'){b.dataset.confirm='yes';b.textContent='방 종료 확인';setTimeout(()=>{b.dataset.confirm='';b.textContent='방 종료'},5000);return}await host(()=>request(client.from('rooms').update({status:'ended',phase:'final'}).eq('room_id',roomId).eq('host_id',uid)));await unsubscribe();sessionStorage.removeItem('choice-supabase-session');changeRole('entry');b.dataset.confirm='';b.textContent='방 종료'};
+    try{client=await window.supabaseClientPromise;let {data:{session}}=await client.auth.getSession();if(!session){const result=await client.auth.signInAnonymously();if(result.error)throw result.error;session=result.data.session}uid=session.user.id;await timeSync();status('연결됨');const saved=JSON.parse(sessionStorage.getItem('choice-supabase-session')||'null');if(saved){let r=await request(client.from('rooms').select('*').eq('room_id',saved.id).maybeSingle());if(r&&r.status!=='ended'&&clock()-Date.parse(r.created_at)<86400000&&(saved.role==='teacher'?r.host_id===uid:!!await request(client.from('players').select('player_id').eq('room_id',saved.id).eq('player_id',uid).maybeSingle()))){window.liveMode=true;state.pin=r.pin;state.me=saved.role==='student'?uid:'';changeRole(saved.role);if(saved.role==='teacher')makeQr();watch(saved.id)}else{sessionStorage.removeItem('choice-supabase-session');notice('이전 방을 복구할 수 없습니다. PIN을 다시 확인해 주세요.')}}setInterval(()=>{if(window.liveMode&&roomId){if(state.role==='teacher')advance();render()}},500);window.addEventListener('pagehide',()=>{if(realtime)client.removeChannel(realtime)})}catch(e){status('연결 안 됨');notice(err(e)+' 같은 브라우저 탭에서 데모 플레이를 이용할 수 있습니다.')}
+  }
+  </script>
  </body>
 </html>
