@@ -224,6 +224,7 @@
     .game-mode:not(.playing-mode) footer{color:#938d9c;margin-top:54px}
     @media(max-width:800px){.game-mode:not(.playing-mode) .layout{grid-template-columns:1fr}.game-mode:not(.playing-mode) .top{margin-bottom:40px}}
     @media(max-width:500px){body.entry-mode .entry-grid .card{padding:23px}.game-mode:not(.playing-mode) .shell{padding:20px 16px 42px}.game-mode:not(.playing-mode) .top{margin-bottom:32px}.game-mode:not(.playing-mode) .card{padding:22px}.game-mode:not(.playing-mode) .room-strip{justify-content:center;text-align:center}.game-mode:not(.playing-mode) .pin{font-size:43px}.game-mode:not(.playing-mode) .metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.game-mode:not(.playing-mode) .metric{padding:12px 7px}.game-mode:not(.playing-mode) .metric strong{font-size:20px}.game-mode:not(.playing-mode) .actions .btn{flex:1;min-width:125px}.game-mode:not(.playing-mode) .rules-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .reward-feedback{margin:18px 0;padding:22px 18px;text-align:center;border:3px solid #d6a6ff;border-radius:8px;background:#36205f;box-shadow:6px 6px 0 #130a30;font-weight:900;image-rendering:pixelated}.reward-feedback strong{display:block;font-size:clamp(26px,5vw,42px);line-height:1.35;letter-spacing:-.05em}.reward-feedback small{display:block;margin-top:7px;font-size:13px;color:#f2deff}.reward-feedback.win{color:#ffe38a;border-color:#ffe38a}.reward-feedback.draw{color:#b7f9ff;border-color:#b7f9ff}.reward-feedback.loss{color:#efc5ff;border-color:#efc5ff}.reward-feedback.snap{color:#ffacc5;border-color:#ffacc5}.reward-feedback.animate{animation:reward-pop .8s steps(5) both}.reward-feedback.animate strong{animation:reward-flash .9s steps(3) both}@keyframes reward-pop{0%{transform:scale(.75) translateY(14px);opacity:0}65%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}@keyframes reward-flash{0%,40%,80%{text-shadow:4px 4px #120925}20%,60%,100%{text-shadow:-4px 4px #a14ce4}}.teacher-rewards{margin:16px 0}.teacher-rewards .match{margin-bottom:6px}.teacher-rewards .points{margin-left:auto}.game-mode:not(.playing-mode) .reward-feedback{background:#f8f3ff;color:#4a2585;box-shadow:6px 6px 0 #e4d4f4}.game-mode:not(.playing-mode) .reward-feedback.win{color:#785008}.game-mode:not(.playing-mode) .reward-feedback.snap{color:#a32855}@media(prefers-reduced-motion:reduce){.reward-feedback.animate,.reward-feedback.animate strong{animation:none}}
     .hero{grid-template-columns:1fr}.brand-icon svg{width:19px;height:19px}
     .guide{max-width:1040px;margin:28px auto 0}.guide summary{cursor:pointer;font-weight:800;color:#7136dc}.guide ol{line-height:1.9;padding-left:22px}.guide code{font-family:monospace;overflow-wrap:anywhere}.guide pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#21133d;color:#f5eaff;padding:15px;border-radius:12px;font-size:12px}.guide p,.guide li{font-size:13px}.entry-mode .guide,.game-mode:not(.playing-mode) .guide{background:#faf9fc;color:#342943;border-color:#eee9f5;box-shadow:none}.guide-status{font-weight:800}
   </style>
@@ -321,6 +322,7 @@
       <div id="demo-tug" class="tug-stage canva-panel" role="img" aria-label="중앙 깃발이 달린 밧줄" style="margin-top:18px">
        <span id="demo-moving" class="tug-moving" aria-hidden="true"><span class="tug-track"></span><span class="tug-flag"></span></span><span class="pixel-fighter left" aria-hidden="true"><span class="pixel-spark">✦</span><span class="pixel-sweat">▪</span><span class="pixel-body"><span class="pixel-head"></span><span class="pixel-eye"></span><span class="pixel-arm upper"></span><span class="pixel-arm lower"></span><span class="pixel-leg front"></span><span class="pixel-leg back"></span></span></span><span class="pixel-fighter right" aria-hidden="true"><span class="pixel-spark">✦</span><span class="pixel-sweat">▪</span><span class="pixel-body"><span class="pixel-head"></span><span class="pixel-eye"></span><span class="pixel-arm upper"></span><span class="pixel-arm lower"></span><span class="pixel-leg front"></span><span class="pixel-leg back"></span></span></span><span class="fighter-name left canva-text" id="demo-left-name">참가자 대기 중</span><span class="fighter-name right canva-text" id="demo-right-name">상대 대기 중</span><span id="demo-caption" class="tug-caption">밧줄 중앙에서 준비</span>
       </div>
+      <div id="teacher-rewards" class="teacher-rewards canva-list" aria-label="학생별 라운드 결과" hidden></div>
       <div id="teacher-status" class="status canva-text" role="status">학생 입장을 기다리는 중입니다.</div>
       <div class="actions">
        <button id="start-button" class="btn yellow canva-button" type="button">게임 시작</button> <button id="pause-button" class="btn secondary canva-button" type="button" hidden>일시 정지</button> <button id="next-button" class="btn secondary canva-button" type="button" hidden>다음 라운드</button> <button id="reset-button" class="btn danger canva-button" type="button">방 종료</button>
@@ -357,6 +359,9 @@
        </div>
        <div id="tug-stage" class="tug-stage canva-panel" role="img" aria-label="양쪽 팀과 중앙 깃발이 달린 밧줄">
         <span id="tug-moving" class="tug-moving" aria-hidden="true"><span class="tug-track"></span><span class="tug-flag"></span></span><span class="pixel-fighter left" aria-hidden="true"><span class="pixel-spark">✦</span><span class="pixel-sweat">▪</span><span class="pixel-body"><span class="pixel-head"></span><span class="pixel-eye"></span><span class="pixel-arm upper"></span><span class="pixel-arm lower"></span><span class="pixel-leg front"></span><span class="pixel-leg back"></span></span></span><span class="pixel-fighter right" aria-hidden="true"><span class="pixel-spark">✦</span><span class="pixel-sweat">▪</span><span class="pixel-body"><span class="pixel-head"></span><span class="pixel-eye"></span><span class="pixel-arm upper"></span><span class="pixel-arm lower"></span><span class="pixel-leg front"></span><span class="pixel-leg back"></span></span></span><span class="fighter-name left canva-text" id="student-left-name">내 이름 확인 중</span><span class="fighter-name right canva-text" id="student-right-name">상대 대기 중</span><span id="tug-caption" class="tug-caption">밧줄 중앙에서 준비</span>
+       </div>
+       <div id="student-reward" class="reward-feedback canva-banner" role="status" aria-live="polite" hidden>
+        <strong id="student-reward-title"></strong><small id="student-reward-detail"></small>
        </div>
        <div class="choice-grid">
         <button id="rush-button" class="choice rush canva-button" type="button" disabled><span class="choice-icon" aria-hidden="true">✊</span>당기기</button> <button id="dodge-button" class="choice dodge canva-button" type="button" disabled><span class="choice-icon" aria-hidden="true">👐</span>힘 빼기</button>
@@ -428,6 +433,17 @@
   const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const send=(type,data={})=>{};
   const player=id=>state.players.find(p=>p.id===id);
+  function roundReward(id){
+    if(!['results','final'].includes(state.phase))return null;
+    const points=state.results?.[id],pair=state.pairs.find(p=>p.includes(id));
+    if(!pair||points==null)return {title:state.bye===id?'이번 라운드 휴식':'선택 미완료 · 득점 없음',detail:'이번 라운드 0점',kind:'draw',points:0};
+    const rival=pair.find(other=>other!==id),mine=state.choices[id],theirs=state.choices[rival];
+    if(points===-50&&mine==='rush'&&theirs==='rush')return {title:'줄이 끊어졌다.. (-50)',detail:'이번 라운드 -50점',kind:'snap',points};
+    if(points===50&&mine==='rush'&&theirs==='dodge')return {title:'승리 (+50)',detail:'이번 라운드 +50점',kind:'win',points};
+    if(points===20&&mine==='dodge'&&theirs==='dodge')return {title:'무승부 (+20)',detail:'이번 라운드 +20점',kind:'draw',points};
+    if(points===10&&mine==='dodge'&&theirs==='rush')return {title:'아쉬운 패배 (+10)',detail:'이번 라운드 +10점',kind:'loss',points};
+    return {title:'결과 확인 중',detail:'점수를 확인해 주세요.',kind:'draw',points:0};
+  }
   const seconds=()=>Math.max(0,Math.ceil((state.deadline-(window.liveMode?clock():Date.now()))/1000));
   function notice(text){$('entry-message').textContent=text;$('entry-message').hidden=!text}
   function snapshot(){return {players:state.players,round:state.round,phase:state.phase,pairs:state.pairs,bye:state.bye,choices:state.choices,history:state.history,results:state.results,deadline:state.deadline,remaining:state.remaining,paused:state.paused,revealAt:state.revealAt,approachEnd:state.approachEnd}}
@@ -574,7 +590,21 @@
   function render(){
     if(stageRound!==state.round){stageRound=state.round;selectedMatch=0}
     document.body.classList.toggle('playing-mode',state.role!=='entry'&&state.phase==='playing');
-    if(state.role==='entry')return;
+    if(state.role==='entry'){$('student-reward').hidden=true;$('teacher-rewards').hidden=true;return}
+    const revealed=['results','final'].includes(state.phase);
+    const rewardKey=state.round+':'+state.revealAt;
+    $('teacher-rewards').hidden=state.role!=='teacher'||!revealed;
+    $('student-reward').hidden=state.role!=='student'||!revealed;
+    if(state.role==='teacher'&&revealed){
+      $('teacher-rewards').innerHTML='<span class="label">이번 라운드 · 학생별 결과와 점수</span>'+state.players.map(p=>{const reward=roundReward(p.id);return '<div class="match canva-card"><span>'+escapeHtml(p.name)+'</span><span class="points">'+escapeHtml(reward.title)+'</span></div>'}).join('');
+    }
+    if(state.role==='student'&&revealed){
+      const reward=roundReward(state.me),box=$('student-reward');
+      $('student-reward-title').textContent=reward.title;
+      $('student-reward-detail').textContent=(player(state.me)?.name||'내 결과')+' · '+reward.detail;
+      for(const kind of ['win','draw','loss','snap'])box.classList.toggle(kind,kind===reward.kind);
+      if(box.dataset.rewardKey!==rewardKey){box.dataset.rewardKey=rewardKey;box.classList.remove('animate');void box.offsetWidth;box.classList.add('animate')}
+    }else{$('student-reward').dataset.rewardKey='';$('student-reward').classList.remove('animate')}
     const active=state.phase==='playing',counting=state.phase==='countdown',timed=active||counting||state.phase==='results',remaining=state.paused?Math.ceil(state.remaining/1000):counting?Math.max(0,Math.ceil((soloDemo?state.deadline-Date.now():state.deadline-60000-clock())/1000)):seconds();
     const sorted=[...state.players].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'ko'));
     $('board-subtitle').textContent=state.phase==='final'?'최종 결과 · 총 5라운드 완료':state.phase==='results'?'라운드 '+state.round+' 결과':active?'라운드 진행 중 · 현재 누적 점수':'게임이 시작되면 점수가 표시됩니다.';
