@@ -1,7 +1,0 @@
-{
-"name": "chicken-game",
-  "private": true,
-  "dependencies": {
-    "convex": "latest"
-  }
-}
