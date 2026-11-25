@@ -15,6 +15,7 @@ export const getRoom = query({
       .unique();
   },
 });
+
 export const createRoom = mutation({
   args: {
     roomId: v.string(),
@@ -33,6 +34,7 @@ export const createRoom = mutation({
     if (existingRoom) {
       throw new Error("이미 사용 중인 방입니다.");
     }
+
     const now = Date.now();
 
     return await ctx.db.insert("rooms", {
@@ -41,13 +43,11 @@ export const createRoom = mutation({
       hostId: args.hostId,
       phase: "setup",
       round: 0,
-
       players: [],
       pairs: [],
       bye: null,
       choices: {},
       results: {},
-
       burning: false,
       multiplier: 1,
       deadline: 0,
@@ -69,7 +69,7 @@ export const joinRoom = mutation({
   handler: async (ctx, args) => {
     const room = await ctx.db
       .query("rooms")
-    withIndex("by_roomId", (q) =>
+      .withIndex("by_roomId", (q) =>
         q.eq("roomId", args.roomId)
       )
       .unique();
@@ -87,7 +87,7 @@ export const joinRoom = mutation({
       : [];
 
     const alreadyJoined = players.some(
-      item: any) => item.id === args.player.id
+      (item: any) => item.id === args.player.id
     );
 
     if (!alreadyJoined) {
@@ -125,6 +125,7 @@ export const startRound = mutation({
         q.eq("roomId", args.roomId)
       )
       .unique();
+
     if (!room) {
       throw new Error("방을 찾을 수 없습니다.");
     }
@@ -139,7 +140,12 @@ export const startRound = mutation({
 
     if (players.length < 1) {
       throw new Error("참가자를 한 명 이상 추가해 주세요.");
-      if (room.phase !== "setup" && room.phase !== "results") {
+    }
+
+    if (
+      room.phase !== "setup" &&
+      room.phase !== "results"
+    ) {
       throw new Error("현재 상태에서는 게임을 시작할 수 없습니다.");
     }
 
@@ -149,15 +155,15 @@ export const startRound = mutation({
     await ctx.db.patch(room._id, {
       phase: "playing",
       round: nextRound,
-
       pairs: args.roundData.pairs || [],
       bye: args.roundData.bye || null,
       choices: {},
       results: {},
-burning: Boolean(args.roundData.burning),
+      burning: Boolean(args.roundData.burning),
       multiplier: Number(args.roundData.multiplier || 1),
-      deadline: Number(args.roundData.deadline || now + 60000),
-
+      deadline: Number(
+        args.roundData.deadline || now + 60000
+      ),
       version: room.version + 1,
       actionId: `start-${nextRound}-${now}`,
       updatedAt: now,
@@ -170,3 +176,6 @@ burning: Boolean(args.roundData.burning),
     };
   },
 });
+
+
+
